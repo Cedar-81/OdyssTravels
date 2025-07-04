@@ -9,6 +9,7 @@ import CreateCircle from './pages/CreateCircle';
 import Navbar from './components/Navbar';
 import Login from './pages/Login';
 import Signup from './pages/Signup';
+import PaymentSuccess from './pages/PaymentSuccess';
 
 function App() {
   return (
@@ -24,6 +25,7 @@ function App() {
         <Route path="/create-circle" element={<CreateCircle />} />
         <Route path="/login" element={<Login />} />
         <Route path='/signup' element={<Signup />} />
+        <Route path="/payment/success" element={<PaymentSuccess />} />
       </Routes>
     </BrowserRouter>
   );
