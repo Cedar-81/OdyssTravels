@@ -91,7 +91,8 @@ export default function RideCard({ trip, onJoin }: RideCardProps) {
                 </div>
                 
                 <button 
-                  className="text-sm cursor-pointer rounded-full bg-black text-white px-5 py-1 h-10 min-w-max hover:bg-gray-800 transition-colors duration-200"
+                  disabled = {trip.id == "a4dc4dc9-9209-4ab2-bfc7-e62dd94a2746"}
+                  className="text-sm cursor-pointer disabled:bg-gray-500 rounded-full bg-black text-white px-5 py-1 h-10 min-w-max hover:bg-gray-800 transition-colors duration-200"
                   onClick={handleJoinClick}
                 >{isMember ? 'View' : 'Join'}</button>
             </div>
