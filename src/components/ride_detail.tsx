@@ -117,7 +117,7 @@ export default function RideDetail({ tripId, onClose }: RideDetailProps) {
 
   return(
         <section 
-          className="shadow-2xl fixed w-[22rem] top-0 right-0 h-screen z-50 bg-white flex flex-col overflow-hidden"
+          className="shadow-2xl fixed w-[22rem] top-0 right-0 h-full z-50 bg-white flex flex-col overflow-hidden"
           onWheel={handleScroll}
         >
             <div className="px-3 py-6 h-[10rem] border space-y-4 rounded-b-xl shadow-xl flex-shrink-0">
