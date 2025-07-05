@@ -111,7 +111,7 @@ export default function Rides() {
         {error && <div className="col-span-4 text-center text-red-500">Error: {error}</div>}
         {!loading && !error && displayTrips.length === 0 && (
           <div className="col-span-4 text-center">
-            {searchResults !== null ? "No rides found matching your search criteria." : "No rides found."}
+            {searchResults !== null ? "No rides found matching your search criteria." : "No rides yes, be the first to curate a trip and you get N3000 off"}
           </div>
         )}
         {displayTrips.map(trip => (
