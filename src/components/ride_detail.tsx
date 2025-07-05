@@ -103,7 +103,7 @@ export default function RideDetail({ tripId, onClose }: RideDetailProps) {
   }
 
   return(
-        <section className="shadow-2xl space-y-6 fixed w-[22rem] top-0 right-0 h-screen z-50 bg-white flex flex-col">
+        <section className="shadow-2xl space-y-6 fixed w-[22rem] overflow-y-auto top-0 right-0 h-screen z-50 bg-white flex flex-col">
             <div className="px-3 py-6 h-[10rem] border space-y-4 rounded-b-xl shadow-xl">
                 <div className="flex gap-2 items-center">
                     <svg className="h-5 cursor-pointer" width="24" height="24" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg" onClick={onClose}>
@@ -130,7 +130,7 @@ export default function RideDetail({ tripId, onClose }: RideDetailProps) {
                 </div>
             </div>
             
-            <div className="space-y-4 flex-1 overflow-y-auto px-4">
+            <div className="space-y-4 flex-1 px-4">
                 <div className="space-y-4">
                     <h2 className="font-medium">Travel buddies</h2>
                     <div className="flex flex-col px-2 gap-3">
