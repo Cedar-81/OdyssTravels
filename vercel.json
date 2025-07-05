@@ -1,12 +1,5 @@
 {
   "rewrites": [
     { "source": "/(.*)", "destination": "/" }
-  ],
-  "redirects": [
-    {
-      "source": "http://travel.odyss.ng",
-      "destination": "https://travel.odyss.ng",
-      "permanent": true
-    }
   ]
 }
