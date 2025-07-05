@@ -14,6 +14,7 @@ export default function RideDetail({ tripId, onClose }: RideDetailProps) {
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
   const [showPayment, setShowPayment] = useState(false);
+  const [copySuccess, setCopySuccess] = useState(false);
 
   useEffect(() => {
     setLoading(true);
@@ -56,6 +57,35 @@ export default function RideDetail({ tripId, onClose }: RideDetailProps) {
     const userId = getUserIdFromLocalStorage();
     return Array.isArray(trip.memberIds) && trip.memberIds.includes(userId);
   }
+
+  // Handle copying the shareable link
+  const handleInviteOthers = async () => {
+    const shareableLink = `${window.location.origin}/rides?trip_id=${tripId}`;
+    
+    try {
+      await navigator.clipboard.writeText(shareableLink);
+      setCopySuccess(true);
+      
+      // Reset success message after 3 seconds
+      setTimeout(() => {
+        setCopySuccess(false);
+      }, 3000);
+    } catch (err) {
+      console.error('Failed to copy link:', err);
+      // Fallback for older browsers
+      const textArea = document.createElement('textarea');
+      textArea.value = shareableLink;
+      document.body.appendChild(textArea);
+      textArea.select();
+      document.execCommand('copy');
+      document.body.removeChild(textArea);
+      
+      setCopySuccess(true);
+      setTimeout(() => {
+        setCopySuccess(false);
+      }, 3000);
+    }
+  };
 
   if (loading) {
     return (
@@ -122,7 +152,14 @@ export default function RideDetail({ tripId, onClose }: RideDetailProps) {
                     </div>
 
                     <div className="w-full flex justify-end">
-                        <button className="text-xs border border-black rounded-full cursor-pointer px-5 py-1">invite others</button>
+                        <button 
+                            className={`text-xs border border-black rounded-full cursor-pointer px-5 py-1 transition-colors duration-200 ${
+                                copySuccess ? 'bg-green-500 text-white border-green-500' : 'hover:bg-black hover:text-white'
+                            }`}
+                            onClick={handleInviteOthers}
+                        >
+                            {copySuccess ? 'Copied!' : 'invite others'}
+                        </button>
                     </div>
                 </div>
 

@@ -23,6 +23,7 @@ export default function Form2({ onNext, onPrevious, formData, onFormDataChange }
     const [companies, setCompanies] = useState<Company[]>([]);
     const [vehicles, setVehicles] = useState<CompanyVehicle[]>([]);
     const [showTooltip, setShowTooltip] = useState(false);
+    const [error, setError] = useState<string | null>(null);
 
     useEffect(() => {
       usersService.getAllCompanies().then(setCompanies).catch(() => setCompanies([]));
@@ -42,7 +43,14 @@ export default function Form2({ onNext, onPrevious, formData, onFormDataChange }
       }
     }, [localData.vehicleType, vehicles]);
 
+    const isValid = localData.vehicleType && localData.seatCount && localData.transportPartner;
+
     const handleNext = () => {
+        if (!isValid) {
+          setError("Please select a transport partner and vehicle type.");
+          return;
+        }
+        setError(null);
         onFormDataChange('vehicleType', localData.vehicleType);
         onFormDataChange('seatCount', localData.seatCount);
         onFormDataChange('transportPartner', localData.transportPartner);
@@ -127,10 +135,11 @@ export default function Form2({ onNext, onPrevious, formData, onFormDataChange }
                     )}
                 </div>
             </div>
-            
+            {error && <div className="text-red-500 text-sm text-center">{error}</div>}
             <button 
                 onClick={handleNext}
-                className="w-[90%] lg:w-full cursor-pointer py-3 text-center rounded-full text-white bg-black hover:bg-gray-800 transition-colors"
+                className={`w-[90%] lg:w-full py-3 text-center rounded-full text-white transition-colors ${isValid ? 'bg-black hover:bg-gray-800 cursor-pointer' : 'bg-gray-300 cursor-not-allowed'}`}
+                disabled={!isValid}
             >
                 Next
             </button>

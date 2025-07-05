@@ -24,6 +24,7 @@ export default function Form4({ onNext, onPrevious, formData, onFormDataChange }
     const [localData, setLocalData] = useState({
         selectedVibes: formData.selectedVibes
     });
+    const [error, setError] = useState<string | null>(null);
 
     const handleVibeToggle = (vibe: string) => {
         setLocalData(prev => ({
@@ -33,7 +34,14 @@ export default function Form4({ onNext, onPrevious, formData, onFormDataChange }
         }));
     };
 
+    const isValid = localData.selectedVibes.length > 0;
+
     const handleNext = () => {
+        if (!isValid) {
+          setError("Please select at least one vibe.");
+          return;
+        }
+        setError(null);
         // Update parent form data
         onFormDataChange('selectedVibes', localData.selectedVibes);
         onNext();
@@ -80,10 +88,11 @@ export default function Form4({ onNext, onPrevious, formData, onFormDataChange }
                     ))}
                 </div>
             </div>
-            
+            {error && <div className="text-red-500 text-sm text-center">{error}</div>}
             <button 
                 onClick={handleNext}
-                className="w-full cursor-pointer py-3 text-center rounded-full text-white bg-black hover:bg-gray-800 transition-colors"
+                className={`w-full py-3 text-center rounded-full text-white transition-colors ${isValid ? 'bg-black hover:bg-gray-800 cursor-pointer' : 'bg-gray-300 cursor-not-allowed'}`}
+                disabled={!isValid}
             >
                 Next
             </button>

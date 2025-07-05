@@ -24,6 +24,7 @@ export default function Form5({ onSubmit, onPrevious, formData, onFormDataChange
         refundPolicyAcknowledged: formData.refundPolicyAcknowledged,
         smartFillPolicy: formData.smartFillPolicy
     });
+    const [error, setError] = useState<string | null>(null);
     const priceSetRef = useRef(false);
 
     // Auto-set price based on selected route
@@ -44,8 +45,20 @@ export default function Form5({ onSubmit, onPrevious, formData, onFormDataChange
         }
     }, [formData.departureCity, formData.destinationCity, formData.tripTime, routes]);
 
+    // Fix: Always sync localData.refundPolicyAcknowledged with formData
+    useEffect(() => {
+      setLocalData(prev => ({ ...prev, refundPolicyAcknowledged: formData.refundPolicyAcknowledged }));
+    }, [formData.refundPolicyAcknowledged]);
+
+    const isValid = localData.tripPrice && localData.refundPolicyAcknowledged && localData.smartFillPolicy;
+
     const handleSubmit = () => {
         if (loading) return; // Prevent multiple submissions
+        if (!isValid) {
+          setError("Please acknowledge the refund policy and select a smart fill policy.");
+          return;
+        }
+        setError(null);
         // Update parent form data
         onFormDataChange('tripPrice', localData.tripPrice);
         onFormDataChange('refundPolicyAcknowledged', localData.refundPolicyAcknowledged);
@@ -89,8 +102,11 @@ export default function Form5({ onSubmit, onPrevious, formData, onFormDataChange
                         <input
                             type="checkbox"
                             id="refundPolicy"
-                            checked={localData.refundPolicyAcknowledged}
-                            onChange={(e) => setLocalData(prev => ({ ...prev, refundPolicyAcknowledged: e.target.checked }))}
+                            checked={!!localData.refundPolicyAcknowledged}
+                            onChange={(e) => {
+                              setLocalData(prev => ({ ...prev, refundPolicyAcknowledged: e.target.checked }));
+                              onFormDataChange('refundPolicyAcknowledged', e.target.checked);
+                            }}
                             className="mt-1"
                         />
                         <p className="text-sm text-gray-600">
@@ -118,11 +134,11 @@ export default function Form5({ onSubmit, onPrevious, formData, onFormDataChange
                     </Select>
                 </div>
             </div>
-            
+            {error && <div className="text-red-500 text-sm text-center">{error}</div>}
             <button 
                 onClick={handleSubmit}
-                className="w-full cursor-pointer py-3 text-center rounded-full text-white bg-black hover:bg-gray-800 transition-colors"
-                disabled={loading || !localData.refundPolicyAcknowledged}
+                className={`w-full py-3 text-center rounded-full text-white transition-colors ${isValid ? 'bg-black hover:bg-gray-800 cursor-pointer' : 'bg-gray-300 cursor-not-allowed'}`}
+                disabled={loading || !isValid}
             >
                 {loading ? "Processing..." : "Book your seat"}
             </button>
