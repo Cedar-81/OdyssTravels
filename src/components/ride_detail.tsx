@@ -246,7 +246,7 @@ export default function RideDetail({ tripId, onClose }: RideDetailProps) {
 
                 <div className="flex justify-center">
                   <button
-                    className={`border-0 disabled:bg-gray-500 cursor-pointer text-center w-full rounded-full py-3 transition-colors duration-200 ${isUserMember() ? 'bg-gray-300 text-gray-500 cursor-not-allowed' : 'bg-black text-white hover:bg-gray-800'}`}
+                    className={`border-0 disabled:bg-gray-300 cursor-pointer text-center w-full rounded-full py-3 transition-colors duration-200 ${isUserMember() ? 'bg-gray-300 text-gray-500 cursor-not-allowed' : 'bg-black text-white hover:bg-gray-800'}`}
                     onClick={() => setShowPayment(true)}
                     disabled={isUserMember() || trip.id == "a4dc4dc9-9209-4ab2-bfc7-e62dd94a2746"}
                   > 

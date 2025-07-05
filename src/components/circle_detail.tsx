@@ -11,7 +11,7 @@ interface CircleDetailProps {
 export default function CircleDetail({ circle, onClose }: CircleDetailProps)  {
     const [copySuccess, setCopySuccess] = useState(false);
     const [inviteModalOpen, setInviteModalOpen] = useState(false);
-    const [selectedMember, setSelectedMember] = useState<{ name: string; id: string } | null>(null);
+    const [selectedMember, setSelectedMember] = useState<{ name: string; id: string; email: string } | null>(null);
 
     // Prevent scroll on body when sidebar is open
     useEffect(() => {
@@ -58,9 +58,32 @@ export default function CircleDetail({ circle, onClose }: CircleDetailProps)  {
     };
 
     // Handle opening invite to trip modal
-    const handleInviteToTrip = (memberName: string, memberId: string) => {
-        setSelectedMember({ name: memberName, id: memberId });
+    const handleInviteToTrip = (memberName: string, memberId: string, memberEmail: string) => {
+        setSelectedMember({ name: memberName, id: memberId, email: memberEmail });
         setInviteModalOpen(true);
+    };
+
+    // Helper to get member email
+    const getMemberEmail = (memberId: string, _memberName: string) => {
+        // First try to find in circle.users array
+        const user = circle.users?.find(u => u.id === memberId);
+        if (user?.email) {
+            return user.email;
+        }
+        
+        // If not found in users, try to find in members and get email from users
+        const member = circle.members?.find(m => m.user_id === memberId);
+        if (member) {
+            const user = circle.users?.find(u => 
+                u.first_name === member.first_name && u.last_name === member.last_name
+            );
+            if (user?.email) {
+                return user.email;
+            }
+        }
+        
+        // Fallback - return empty string if no email found
+        return '';
     };
 
     // Handle closing invite modal
@@ -136,7 +159,7 @@ export default function CircleDetail({ circle, onClose }: CircleDetailProps)  {
                                                 <div className="flex gap-2">
                                                     <button 
                                                         className="text-xs border border-black rounded-full cursor-pointer px-3 py-1 hover:bg-black hover:text-white transition-colors"
-                                                        onClick={() => handleInviteToTrip(`${user.first_name} ${user.last_name}`, user.id)}
+                                                        onClick={() => handleInviteToTrip(`${user.first_name} ${user.last_name}`, user.id, user.email)}
                                                     >
                                                         invite to trip
                                                     </button>
@@ -160,7 +183,7 @@ export default function CircleDetail({ circle, onClose }: CircleDetailProps)  {
                                                 <div className="flex gap-2">
                                                     <button 
                                                         className="text-xs border border-black rounded-full cursor-pointer px-3 py-1 hover:bg-black hover:text-white transition-colors"
-                                                        onClick={() => handleInviteToTrip(`${member.first_name} ${member.last_name}`, member.user_id)}
+                                                        onClick={() => handleInviteToTrip(`${member.first_name} ${member.last_name}`, member.user_id, getMemberEmail(member.user_id, `${member.first_name} ${member.last_name}`))}
                                                     >
                                                         invite to trip
                                                     </button>
@@ -210,6 +233,9 @@ export default function CircleDetail({ circle, onClose }: CircleDetailProps)  {
                     onClose={handleCloseInviteModal}
                     memberName={selectedMember.name}
                     memberId={selectedMember.id}
+                    memberEmail={selectedMember.email}
+                    circleId={circle.id}
+                    circleName={circle.name}
                 />
             )}
         </section>

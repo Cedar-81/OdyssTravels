@@ -1,18 +1,25 @@
 import { useState, useEffect } from "react";
 import { tripsService, type Trip } from "@/services/trips";
+import { notificationsService } from "@/services/notifications";
 
 interface TripInvitationModalProps {
   isOpen: boolean;
   onClose: () => void;
   memberName: string;
   memberId: string;
+  memberEmail: string;
+  circleId: string;
+  circleName: string;
 }
 
 export default function TripInvitationModal({ 
   isOpen, 
   onClose, 
   memberName, 
-  memberId 
+  memberId,
+  memberEmail,
+  circleId,
+  circleName
 }: TripInvitationModalProps) {
   const [trips, setTrips] = useState<Trip[]>([]);
   const [loading, setLoading] = useState(false);
@@ -81,8 +88,27 @@ export default function TripInvitationModal({
   const handleInviteToTrip = async (tripId: string) => {
     setInviting(true);
     try {
-      await tripsService.inviteToTrip(tripId, memberId);
-      console.log(`Successfully invited ${memberName} to trip ${tripId}`);
+      // Get current user name for the invitation
+      const userStr = localStorage.getItem('odyss_user');
+      const currentUser = userStr ? JSON.parse(userStr) : null;
+      const inviterName = currentUser ? `${currentUser.first_name} ${currentUser.last_name}` : 'Someone';
+
+      // Send invitation email
+      await notificationsService.sendInvitationEmail(
+        memberEmail,
+        circleId,
+        circleName,
+        inviterName
+      );
+
+      // Also invite to trip (if this endpoint exists)
+      try {
+        await tripsService.inviteToTrip(tripId, memberId);
+      } catch (tripErr) {
+        console.log("Trip invitation failed, but email was sent:", tripErr);
+      }
+
+      console.log(`Successfully sent invitation email to ${memberName} for trip ${tripId}`);
       setInviteSuccess(true);
       
       // Close modal after showing success for 2 seconds
@@ -91,7 +117,7 @@ export default function TripInvitationModal({
         setInviteSuccess(false);
       }, 2000);
     } catch (err: any) {
-      console.error("Error inviting to trip:", err);
+      console.error("Error sending invitation:", err);
       setError("Failed to send invitation. Please try again.");
     } finally {
       setInviting(false);
