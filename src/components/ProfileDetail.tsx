@@ -16,6 +16,14 @@ export default function ProfileDetail({ onClose }: ProfileDetailProps) {
   const [bookingsLoading, setBookingsLoading] = useState(true);
   const [tripsLoading, setTripsLoading] = useState(true);
 
+  // Prevent scroll on body when sidebar is open
+  useEffect(() => {
+    document.body.style.overflow = 'hidden';
+    return () => {
+      document.body.style.overflow = 'unset';
+    };
+  }, []);
+
   useEffect(() => {
     let isMounted = true;
     usersService.getMyProfile()
@@ -131,6 +139,11 @@ export default function ProfileDetail({ onClose }: ProfileDetailProps) {
     };
   }
 
+  // Prevent scroll propagation
+  const handleScroll = (e: React.WheelEvent) => {
+    e.stopPropagation();
+  };
+
   let avatarUrl = profile?.avatar || undefined;
   let initials = 'U';
   let displayName = profile?.nickname || profile?.first_name || 'User';
@@ -142,8 +155,11 @@ export default function ProfileDetail({ onClose }: ProfileDetailProps) {
   }
 
   return (
-    <section className="shadow-2xl space-y-6 fixed w-[22rem] top-0 right-0 h-screen z-50 bg-white overflow-y-auto">
-      <div className="px-4  sticky top-0 bg-white py-4 h-min max-h-[7.5rem] border-b space-y-4 rounded-b-xl border-black/60 flex items-start justify-between">
+    <section 
+      className="shadow-2xl space-y-6 fixed w-[22rem] top-0 right-0 h-screen z-50 bg-white flex flex-col overflow-hidden"
+      onWheel={handleScroll}
+    >
+      <div className="px-4 py-4 h-min max-h-[7.5rem] border-b space-y-4 rounded-b-xl border-black/60 flex items-start justify-between flex-shrink-0">
         <div className="flex gap-3 items-start">
           <Avatar className="size-10">
             <AvatarImage src={avatarUrl} alt={initials} />
@@ -164,178 +180,170 @@ export default function ProfileDetail({ onClose }: ProfileDetailProps) {
         </div>
       </div>
 
-      {/* Tickets Section */}
-      <div className="space-y-4">
-        <div className="px-4 space-y-2">
-          <h2 className="font-medium">Tickets</h2>
-          <h4 className="text-xs font-medium text-black/40">Active</h4>
-        </div>
-        
-        <div className="px-4 space-y-3">
-          {bookingsLoading ? (
-            <div className="text-center py-4 text-sm text-gray-500">Loading tickets...</div>
-          ) : bookings.length === 0 ? (
-            <div className="text-center py-4 text-sm text-gray-500">No active tickets</div>
-          ) : (
-            bookings.map((booking) => {
-              console.log('🎫 Booking details:', booking);
-              const departure = formatDateTime(booking.trip?.departure_time || '');
-              const trip = booking.trip;
-              
-              if (!trip) {
-                console.warn('⚠️ Booking missing trip data:', booking);
-                return null;
-              }
-              
-              return (
-                <div key={booking.booking.booking_id} className="bg-black/5 rounded-xl p-4 space-y-5">
-                  <div className="flex justify-between items-center gap-2">
-                    <div className="flex items-center gap-2">
-                      <span className="text-xs font-medium">Trip #{booking.booking.booking_id}</span>
-                      <span className={`text-xs px-2 py-1 rounded-full ${
-                        booking.booking.status === 'paid' ? 'bg-green-100 text-green-800' : 
-                        booking.booking.status === 'pending' ? 'bg-yellow-100 text-yellow-800' : 
-                        'bg-gray-100 text-gray-800'
-                      }`}>
-                        {booking.booking.status}
-                      </span>
-                    </div>
-                    <button 
-                      onClick={() => handleCancelBooking(booking.booking.booking_id)}
-                      className="text-xs cursor-pointer rounded-full bg-red-500 text-white px-3 py-1 hover:bg-red-600 transition-colors"
-                    >
-                      Cancel
-                    </button>
-                  </div>
+      <div className="flex-1 overflow-y-auto px-4 py-4">
+        <div className="space-y-6">
+          {/* Tickets Section */}
+          <div className="space-y-4">
+            <div className="space-y-2">
+              <h2 className="font-medium">Tickets</h2>
+              <h4 className="text-xs font-medium text-black/40">Active</h4>
+            </div>
+            
+            <div className="space-y-3">
+              {bookingsLoading ? (
+                <div className="text-center py-4 text-sm text-gray-500">Loading tickets...</div>
+              ) : bookings.length === 0 ? (
+                <div className="text-center py-4 text-sm text-gray-500">No active tickets</div>
+              ) : (
+                bookings.map((booking) => {
+                  console.log('🎫 Booking details:', booking);
+                  const departure = formatDateTime(booking.trip?.departure_time || '');
+                  const trip = booking.trip;
                   
-                  <div className="">
-                    <div className="flex items-center gap-2">
-                      <svg className="ml-1" width="9" height="9" viewBox="0 0 9 9" fill="none" xmlns="http://www.w3.org/2000/svg">
-                        <circle cx="4.5" cy="4.5" r="4.5" fill="black"/>
-                      </svg>
-                      <div className="flex text-xs items-center justify-between w-full">
-                        <h3 className="text-sm font-medium">{trip.origin || 'Unknown'}</h3>
-                        <p>{departure.date}, {departure.time}</p>
-                      </div>
-                    </div>
-                    <svg className="ml-2" width="2" height="20" viewBox="0 0 2 33" fill="none" xmlns="http://www.w3.org/2000/svg">
-                      <line x1="1" y1="4.37114e-08" x2="0.999999" y2="33" stroke="black" strokeWidth="2" strokeDasharray="6 6"/>
-                    </svg>
-                    <div className="flex items-center gap-2">
-                      <svg width="18" height="20" viewBox="0 0 18 20" fill="none" xmlns="http://www.w3.org/2000/svg">
-                        <path d="M14.9401 14.7458C16.5156 13.1695 17.4007 11.0321 17.4007 8.8034C17.4007 6.57474 16.5156 4.4373 14.9401 2.861C14.1601 2.08089 13.2341 1.46208 12.2149 1.03988C11.1957 0.617691 10.1033 0.400391 9.00013 0.400391C7.89696 0.400391 6.80458 0.617691 5.78539 1.03988C4.7662 1.46208 3.84015 2.08089 3.06013 2.861C1.48464 4.4373 0.599609 6.57474 0.599609 8.8034C0.599609 11.0321 1.48464 13.1695 3.06013 14.7458L4.88533 16.5446L7.33693 18.9266L7.49653 19.0682C8.42653 19.8218 9.78853 19.7738 10.6645 18.9266L13.5865 16.0826L14.9401 14.7458ZM9.00013 12.3998C8.04535 12.3998 7.12968 12.0205 6.45455 11.3454C5.77942 10.6703 5.40013 9.75458 5.40013 8.7998C5.40013 7.84502 5.77942 6.92934 6.45455 6.25421C7.12968 5.57908 8.04535 5.1998 9.00013 5.1998C9.95491 5.1998 10.8706 5.57908 11.5457 6.25421C12.2208 6.92934 12.6001 7.84502 12.6001 8.7998C12.6001 9.75458 12.2208 10.6703 11.5457 11.3454C10.8706 12.0205 9.95491 12.3998 9.00013 12.3998Z" fill="black"/>
-                      </svg>
-                      <div className="flex text-xs items-center justify-between w-full">
-                        <h3 className="text-sm font-medium">{trip.destination || 'Unknown'}</h3>
-                      </div>
-                    </div>
-                  </div>
+                  if (!trip) {
+                    console.warn('⚠️ Booking missing trip data:', booking);
+                    return null;
+                  }
                   
-                  <div className="flex justify-between text-xs">
-                    <h3 className="font-medium">Seat {booking.booking.seat_number}</h3>
-                    <p><span className="font-medium">Price: </span> N{trip.price?.toLocaleString() || '0'}</p>
-                  </div>
-                </div>
-              );
-            }).filter(Boolean) // Remove null entries
-          )}
-        </div>
-      </div>
-
-      {/* Trips Section */}
-      <div className="space-y-4">
-        <div className="px-4 space-y-2">
-          <h2 className="font-medium">Trips</h2>
-          <h4 className="text-xs font-medium text-black/40">Active</h4>
-        </div>
-        
-        <div className="px-4 space-y-3">
-          {tripsLoading ? (
-            <div className="text-center py-4 text-sm text-gray-500">Loading trips...</div>
-          ) : userTrips.length === 0 ? (
-            <div className="text-center py-4 text-sm text-gray-500">No active trips</div>
-          ) : (
-            userTrips.map((trip) => {
-              const departure = formatDateTime(trip.departureDate);
-              const arrival = formatDateTime(trip.arrival_time);
-              
-              // Ensure users array exists and is an array
-              const users = Array.isArray(trip.users) ? trip.users : [];
-              
-              return (
-                <div key={trip.id} className="bg-black/5 rounded-xl flex flex-col overflow-clip p-4 gap-4">
-                  <div className="flex gap-12 justify-between">
-                    <div className="flex items-center gap-2 font-medium">
-                      <div className="*:data-[slot=avatar]:ring-background flex -space-x-5 *:data-[slot=avatar]:ring-2 *:data-[slot=avatar]:grayscale">
-                        {users.slice(0, 3).map((user, idx) => {
-                          const initials = ((user.first_name?.[0] || '') + (user.last_name?.[0] || '')).toUpperCase();
-                          return (
-                            <Avatar className="size-6 rounded-full overflow-clip" key={idx}>
-                              {user.avatar ? (
-                                <AvatarImage src={user.avatar} alt={user.name} />
-                              ) : null}
-                              <AvatarFallback className="text-xs">{initials}</AvatarFallback>
-                            </Avatar>
-                          );
-                        })}
+                  return (
+                    <div key={booking.booking.booking_id} className="bg-black/5 rounded-xl p-4 space-y-5">
+                      <div className="flex justify-between items-center gap-2">
+                        <div className="flex items-center gap-2">
+                          <span className="text-xs font-medium">Trip #{booking.booking.booking_id}</span>
+                          <span className={`text-xs px-2 py-1 rounded-full ${
+                            booking.booking.status === 'paid' ? 'bg-green-100 text-green-800' : 
+                            booking.booking.status === 'pending' ? 'bg-yellow-100 text-yellow-800' : 
+                            'bg-gray-100 text-gray-800'
+                          }`}>
+                            {booking.booking.status}
+                          </span>
+                        </div>
+                        <button 
+                          onClick={() => handleCancelBooking(booking.booking.booking_id)}
+                          className="text-xs text-red-600 hover:text-red-800 transition-colors"
+                        >
+                          Cancel
+                        </button>
                       </div>
-                      <h2 className="text-xs">
-                        {users.length > 0 && (
-                          users.length > 1
-                            ? `${users[0].name.length > 5 ? users[0].name.slice(0, 5) + '...' : users[0].name} and ${users.length - 1} others`
-                            : (users[0].name.length > 5 ? users[0].name.slice(0, 5) + '...' : users[0].name)
-                        )}
-                      </h2>
-                    </div>
-                  </div>
 
-                  <div>
-                    <div className="flex items-center gap-2">
-                      <svg width="9" className="ml-1" height="9" viewBox="0 0 9 9" fill="none" xmlns="http://www.w3.org/2000/svg">
-                        <circle cx="4.5" cy="4.5" r="4.5" fill="black"/>
-                      </svg>
-                      <div className="flex text-xs items-center justify-between w-full">
-                        <h3 className="text-sm font-medium">{trip.departureLoc}</h3>
-                        <p>{departure.date}, {departure.time}</p>
+                      <div>
+                        <div className="flex items-center gap-2">
+                          <svg width="9" className="ml-1" height="9" viewBox="0 0 9 9" fill="none" xmlns="http://www.w3.org/2000/svg">
+                            <circle cx="4.5" cy="4.5" r="4.5" fill="black"/>
+                          </svg>
+                          <div className="flex text-xs items-center justify-between w-full">
+                            <h3 className="text-sm font-medium">{trip.origin}</h3>
+                            <p>{departure.date}, {departure.time}</p>
+                          </div>
+                        </div>
+                        <svg className="ml-2" width="2" height="20" viewBox="0 0 2 33" fill="none" xmlns="http://www.w3.org/2000/svg">
+                          <line x1="1" y1="4.37114e-08" x2="0.999999" y2="33" stroke="black" stroke-width="2" stroke-dasharray="6 6"/>
+                        </svg>
+                        <div className="flex items-center gap-2">
+                          <svg width="18" height="20" viewBox="0 0 18 20" fill="none" xmlns="http://www.w3.org/2000/svg">
+                            <path d="M14.9401 14.7458C16.5156 13.1695 17.4007 11.0321 17.4007 8.8034C17.4007 6.57474 16.5156 4.4373 14.9401 2.861C14.1601 2.08089 13.2341 1.46208 12.2149 1.03988C11.1957 0.617691 10.1033 0.400391 9.00013 0.400391C7.89696 0.400391 6.80458 0.617691 5.78539 1.03988C4.7662 1.46208 3.84015 2.08089 3.06013 2.861C1.48464 4.4373 0.599609 6.57474 0.599609 8.8034C0.599609 11.0321 1.48464 13.1695 3.06013 14.7458L4.88533 16.5446L7.33693 18.9266L7.49653 19.0682C8.42653 19.8218 9.78853 19.7738 10.6645 18.9266L13.5865 16.0826L14.9401 14.7458ZM9.00013 12.3998C8.04535 12.3998 7.12968 12.0205 6.45455 11.3454C5.77942 10.6703 5.40013 9.75458 5.40013 8.7998C5.40013 7.84502 5.77942 6.92934 6.45455 6.25421C7.12968 5.57908 8.04535 5.1998 9.00013 5.1998C9.95491 5.1998 10.8706 5.57908 11.5457 6.25421C12.2208 6.92934 12.6001 7.84502 12.6001 8.7998C12.6001 9.75458 12.2208 10.6703 11.5457 11.3454C10.8706 12.0205 9.95491 12.3998 9.00013 12.3998Z" fill="black"/>
+                          </svg>
+                          <div className="flex text-xs items-center justify-between w-full">
+                            <h3 className="text-sm font-medium">{trip.destination}</h3>
+                            <p>{departure.date} {departure.time}</p>
+                          </div>
+                        </div>
+                      </div>
+
+                      <div className="flex items-center justify-between text-xs">
+                        <h3 className="font-medium">Seat {booking.booking.seat_number}</h3>
+                        <p><span className="font-medium">Vehicle: </span> {trip.vehicle}</p>
+                      </div>
+
+                      <div className="flex justify-between">
+                        <div className="flex flex-col items-center">
+                          <h4 className="font-medium text-xs">N{trip.price.toLocaleString()}</h4>
+                          <p className="text-xs">per seat</p>
+                        </div>
+                        <div className="flex flex-col items-center">
+                          <h4 className="font-medium text-xs">{trip.seats_available} seats</h4>
+                          <p className="text-xs">available</p>
+                        </div>
+                        <div className="flex flex-col items-center">
+                          <h4 className="font-medium text-xs">-</h4>
+                          <p className="text-xs">days left</p>
+                        </div>
                       </div>
                     </div>
-                    <svg className="ml-2" width="2" height="20" viewBox="0 0 2 33" fill="none" xmlns="http://www.w3.org/2000/svg">
-                      <line x1="1" y1="4.37114e-08" x2="0.999999" y2="33" stroke="black" strokeWidth="2" strokeDasharray="6 6"/>
-                    </svg>
-                    <div className="flex items-center gap-2">
-                      <svg width="18" height="20" viewBox="0 0 18 20" fill="none" xmlns="http://www.w3.org/2000/svg">
-                        <path d="M14.9401 14.7458C16.5156 13.1695 17.4007 11.0321 17.4007 8.8034C17.4007 6.57474 16.5156 4.4373 14.9401 2.861C14.1601 2.08089 13.2341 1.46208 12.2149 1.03988C11.1957 0.617691 10.1033 0.400391 9.00013 0.400391C7.89696 0.400391 6.80458 0.617691 5.78539 1.03988C4.7662 1.46208 3.84015 2.08089 3.06013 2.861C1.48464 4.4373 0.599609 6.57474 0.599609 8.8034C0.599609 11.0321 1.48464 13.1695 3.06013 14.7458L4.88533 16.5446L7.33693 18.9266L7.49653 19.0682C8.42653 19.8218 9.78853 19.7738 10.6645 18.9266L13.5865 16.0826L14.9401 14.7458ZM9.00013 12.3998C8.04535 12.3998 7.12968 12.0205 6.45455 11.3454C5.77942 10.6703 5.40013 9.75458 5.40013 8.7998C5.40013 7.84502 5.77942 6.92934 6.45455 6.25421C7.12968 5.57908 8.04535 5.1998 9.00013 5.1998C9.95491 5.1998 10.8706 5.57908 11.5457 6.25421C12.2208 6.92934 12.6001 7.84502 12.6001 8.7998C12.6001 9.75458 12.2208 10.6703 11.5457 11.3454C10.8706 12.0205 9.95491 12.3998 9.00013 12.3998Z" fill="black"/>
-                      </svg>
-                      <div className="flex text-xs items-center justify-between w-full">
-                        <h3 className="text-sm font-medium">{trip.arrivalLoc}</h3>
-                        <p>{arrival.date} {arrival.time}</p>
+                  );
+                })
+              )}
+            </div>
+          </div>
+
+          {/* Upcoming Trips Section */}
+          <div className="space-y-4">
+            <div className="space-y-2">
+              <h2 className="font-medium">Upcoming Trips</h2>
+              <h4 className="text-xs font-medium text-black/40">Future</h4>
+            </div>
+            
+            <div className="space-y-3">
+              {tripsLoading ? (
+                <div className="text-center py-4 text-sm text-gray-500">Loading trips...</div>
+              ) : userTrips.length === 0 ? (
+                <div className="text-center py-4 text-sm text-gray-500">No upcoming trips</div>
+              ) : (
+                userTrips.map((trip) => {
+                  const departure = formatDateTime(trip.departureDate);
+                  const arrival = formatDateTime(trip.arrival_time);
+                  
+                  return (
+                    <div key={trip.id} className="bg-black/5 rounded-xl p-4 space-y-5">
+                      <div>
+                        <div className="flex items-center gap-2">
+                          <svg width="9" className="ml-1" height="9" viewBox="0 0 9 9" fill="none" xmlns="http://www.w3.org/2000/svg">
+                            <circle cx="4.5" cy="4.5" r="4.5" fill="black"/>
+                          </svg>
+                          <div className="flex text-xs items-center justify-between w-full">
+                            <h3 className="text-sm font-medium">{trip.departureLoc}</h3>
+                            <p>{departure.date}, {departure.time}</p>
+                          </div>
+                        </div>
+                        <svg className="ml-2" width="2" height="20" viewBox="0 0 2 33" fill="none" xmlns="http://www.w3.org/2000/svg">
+                          <line x1="1" y1="4.37114e-08" x2="0.999999" y2="33" stroke="black" stroke-width="2" stroke-dasharray="6 6"/>
+                        </svg>
+                        <div className="flex items-center gap-2">
+                          <svg width="18" height="20" viewBox="0 0 18 20" fill="none" xmlns="http://www.w3.org/2000/svg">
+                            <path d="M14.9401 14.7458C16.5156 13.1695 17.4007 11.0321 17.4007 8.8034C17.4007 6.57474 16.5156 4.4373 14.9401 2.861C14.1601 2.08089 13.2341 1.46208 12.2149 1.03988C11.1957 0.617691 10.1033 0.400391 9.00013 0.400391C7.89696 0.400391 6.80458 0.617691 5.78539 1.03988C4.7662 1.46208 3.84015 2.08089 3.06013 2.861C1.48464 4.4373 0.599609 6.57474 0.599609 8.8034C0.599609 11.0321 1.48464 13.1695 3.06013 14.7458L4.88533 16.5446L7.33693 18.9266L7.49653 19.0682C8.42653 19.8218 9.78853 19.7738 10.6645 18.9266L13.5865 16.0826L14.9401 14.7458ZM9.00013 12.3998C8.04535 12.3998 7.12968 12.0205 6.45455 11.3454C5.77942 10.6703 5.40013 9.75458 5.40013 8.7998C5.40013 7.84502 5.77942 6.92934 6.45455 6.25421C7.12968 5.57908 8.04535 5.1998 9.00013 5.1998C9.95491 5.1998 10.8706 5.57908 11.5457 6.25421C12.2208 6.92934 12.6001 7.84502 12.6001 8.7998C12.6001 9.75458 12.2208 10.6703 11.5457 11.3454C10.8706 12.0205 9.95491 12.3998 9.00013 12.3998Z" fill="black"/>
+                          </svg>
+                          <div className="flex text-xs items-center justify-between w-full">
+                            <h3 className="text-sm font-medium">{trip.arrivalLoc}</h3>
+                            <p>{arrival.date} {arrival.time}</p>
+                          </div>
+                        </div>
+                      </div>
+
+                      <div className="flex items-center justify-between text-xs">
+                        <h3 className="font-medium">{trip.company}</h3>
+                        <p><span className="font-medium">Vehicle: </span> {trip.vehicle}</p>
+                      </div>
+
+                      <div className="flex justify-between">
+                        <div className="flex flex-col items-center">
+                          <h4 className="font-medium text-xs">N{trip.price.toLocaleString()}</h4>
+                          <p className="text-xs">per seat</p>
+                        </div>
+                        <div className="flex flex-col items-center">
+                          <h4 className="font-medium text-xs">{trip.seats_available} seats</h4>
+                          <p className="text-xs">available</p>
+                        </div>
+                        <div className="flex flex-col items-center">
+                          <h4 className="font-medium text-xs">{trip.days_left}</h4>
+                          <p className="text-xs">left to trip</p>
+                        </div>
                       </div>
                     </div>
-                  </div>
-
-                  <div className="flex items-center justify-between text-xs">
-                    <h3 className="font-medium">{trip.company}</h3>
-                    <p><span className="font-medium">Vehicle: </span> {trip.vehicle}</p>
-                  </div>
-
-                  <div className="flex justify-between">
-                    <div className="flex flex-col items-center">
-                      <h4 className="font-medium text-xs">N{trip.price.toLocaleString()}</h4>
-                      <p className="text-xs">per seat</p>
-                    </div>
-                    <div className="flex flex-col items-center">
-                      <h4 className="font-medium text-xs">{trip.seats_available} seats</h4>
-                      <p className="text-xs">available</p>
-                    </div>
-                    <div className="flex flex-col items-center">
-                      <h4 className="font-medium text-xs">{trip.days_left}</h4>
-                      <p className="text-xs">left to trip</p>
-                    </div>
-                  </div>
-                </div>
-              );
-            })
-          )}
+                  );
+                })
+              )}
+            </div>
+          </div>
         </div>
       </div>
     </section>

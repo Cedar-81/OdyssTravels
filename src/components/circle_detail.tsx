@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { Avatar, AvatarFallback, AvatarImage } from "./ui/avatar";
 import type { Circle } from "@/services/circles";
 
@@ -9,6 +9,14 @@ interface CircleDetailProps {
 
 export default function CircleDetail({ circle, onClose }: CircleDetailProps)  {
     const [copySuccess, setCopySuccess] = useState(false);
+
+    // Prevent scroll on body when sidebar is open
+    useEffect(() => {
+        document.body.style.overflow = 'hidden';
+        return () => {
+            document.body.style.overflow = 'unset';
+        };
+    }, []);
 
     // Helper to get user initials
     const getUserInitials = (firstName: string, lastName: string) => {
@@ -57,13 +65,21 @@ export default function CircleDetail({ circle, onClose }: CircleDetailProps)  {
         }
     };
 
+    // Prevent scroll propagation
+    const handleScroll = (e: React.WheelEvent) => {
+        e.stopPropagation();
+    };
+
     const currentUserId = getCurrentUserId();
     const isCurrentUserMember = circle.users?.some(user => user.id === currentUserId) || 
                                circle.members?.some(member => member.user_id === currentUserId);
 
     return(
-        <section className="shadow-2xl space-y-6 fixed w-[22rem] top-0 right-0 h-screen z-50 bg-white">
-            <div className="px-3 py-6 h-[7.5rem] border space-y-4 rounded-b-xl shadow-xl">
+        <section 
+            className="shadow-2xl space-y-6 fixed w-[22rem] top-0 right-0 h-screen z-50 bg-white flex flex-col overflow-hidden"
+            onWheel={handleScroll}
+        >
+            <div className="px-3 py-6 h-[7.5rem] border space-y-4 rounded-b-xl shadow-xl flex-shrink-0">
                 <div className="flex gap-2">
                     <svg className="h-5 mt-4 cursor-pointer" width="24" height="24" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg" onClick={onClose}>
                         <path d="M15.375 5.25L8.625 12L15.375 18.75" stroke="black" strokeWidth="2.25" strokeLinecap="round" strokeLinejoin="round"/>
@@ -92,83 +108,85 @@ export default function CircleDetail({ circle, onClose }: CircleDetailProps)  {
                 </div>
             </div>
             
-            <div className="space-y-4 h-[calc(100%-12.5rem)] pb-6 overflow-y-auto">
-                <p className="py-3 px-4 text-sm text-black/60">{circle.description}</p>
-                <div className="px-4 space-y-4">
-                    <h2 className="font-medium">Members</h2>
-                    <div className="flex flex-col px-2 gap-3">
-                        {circle.users && circle.users.length > 0 ? (
-                            circle.users.map((user) => {
-                                const initials = getUserInitials(user.first_name, user.last_name);
-                                return (
-                                    <div className="flex gap-2 items-center justify-between" key={user.id}>
-                                        <div className="flex gap-2 items-center">
-                                            <Avatar className="size-5">
-                                                {user.avatar ? (
-                                                    <AvatarImage src={user.avatar} alt={user.first_name + ' ' + user.last_name} />
-                                                ) : null}
-                                                <AvatarFallback>{initials}</AvatarFallback>
-                                            </Avatar>
-                                            <p className="text-xs">{user.first_name} {user.last_name}</p>
+            <div className="flex-1 overflow-y-auto px-4 py-4">
+                <div className="space-y-6">
+                    <p className="text-sm text-black/60">{circle.description}</p>
+                    <div className="space-y-4">
+                        <h2 className="font-medium">Members</h2>
+                        <div className="flex flex-col px-2 gap-3">
+                            {circle.users && circle.users.length > 0 ? (
+                                circle.users.map((user) => {
+                                    const initials = getUserInitials(user.first_name, user.last_name);
+                                    return (
+                                        <div className="flex gap-2 items-center justify-between" key={user.id}>
+                                            <div className="flex gap-2 items-center">
+                                                <Avatar className="size-5">
+                                                    {user.avatar ? (
+                                                        <AvatarImage src={user.avatar} alt={user.first_name + ' ' + user.last_name} />
+                                                    ) : null}
+                                                    <AvatarFallback>{initials}</AvatarFallback>
+                                                </Avatar>
+                                                <p className="text-xs">{user.first_name} {user.last_name}</p>
+                                            </div>
+                                            {user.id !== currentUserId && (
+                                                <button className="text-xs border border-black rounded-full cursor-pointer px-3 py-1">
+                                                    invite
+                                                </button>
+                                            )}
                                         </div>
-                                        {user.id !== currentUserId && (
-                                            <button className="text-xs border border-black rounded-full cursor-pointer px-3 py-1">
-                                                invite
-                                            </button>
-                                        )}
-                                    </div>
-                                );
-                            })
-                        ) : circle.members && circle.members.length > 0 ? (
-                            circle.members.map((member) => {
-                                const initials = getUserInitials(member.first_name, member.last_name);
-                                return (
-                                    <div className="flex gap-2 items-center justify-between" key={member.id}>
-                                        <div className="flex gap-2 items-center">
-                                            <Avatar className="size-5">
-                                                <AvatarFallback>{initials}</AvatarFallback>
-                                            </Avatar>
-                                            <p className="text-xs">{member.first_name} {member.last_name}</p>
+                                    );
+                                })
+                            ) : circle.members && circle.members.length > 0 ? (
+                                circle.members.map((member) => {
+                                    const initials = getUserInitials(member.first_name, member.last_name);
+                                    return (
+                                        <div className="flex gap-2 items-center justify-between" key={member.id}>
+                                            <div className="flex gap-2 items-center">
+                                                <Avatar className="size-5">
+                                                    <AvatarFallback>{initials}</AvatarFallback>
+                                                </Avatar>
+                                                <p className="text-xs">{member.first_name} {member.last_name}</p>
+                                            </div>
+                                            {member.user_id !== currentUserId && (
+                                                <button className="text-xs border border-black rounded-full cursor-pointer px-3 py-1">
+                                                    invite
+                                                </button>
+                                            )}
                                         </div>
-                                        {member.user_id !== currentUserId && (
-                                            <button className="text-xs border border-black rounded-full cursor-pointer px-3 py-1">
-                                                invite
-                                            </button>
-                                        )}
-                                    </div>
-                                );
-                            })
-                        ) : (
-                            <div className="text-xs text-gray-400">No members yet.</div>
-                        )}
-                    </div>
+                                    );
+                                })
+                            ) : (
+                                <div className="text-xs text-gray-400">No members yet.</div>
+                            )}
+                        </div>
 
-                    <div className="w-full flex justify-end">
-                        <button 
-                            className={`text-xs border border-black rounded-full cursor-pointer px-5 py-1 transition-colors duration-200 ${
-                                copySuccess ? 'bg-green-500 text-white border-green-500' : 'hover:bg-black hover:text-white'
-                            }`}
-                            onClick={handleInviteOthers}
-                        >
-                            {copySuccess ? 'Copied!' : 'invite others'}
-                        </button>
+                        <div className="w-full flex justify-end">
+                            <button 
+                                className={`text-xs border border-black rounded-full cursor-pointer px-5 py-1 transition-colors duration-200 ${
+                                    copySuccess ? 'bg-green-500 text-white border-green-500' : 'hover:bg-black hover:text-white'
+                                }`}
+                                onClick={handleInviteOthers}
+                            >
+                                {copySuccess ? 'Copied!' : 'invite others'}
+                            </button>
+                        </div>
                     </div>
                 </div>
             </div>
 
-            <div className="h-[5rem] absolute w-full justify-center bottom-0">
-               <div className="flex justify-center mt-5">
-                   <button 
-                       className={`border-0 cursor-pointer text-center w-[90%] rounded-full py-3 transition-colors duration-200 ${
-                           isCurrentUserMember 
-                               ? 'bg-gray-300 text-gray-500 cursor-not-allowed' 
-                               : 'bg-black text-white hover:bg-gray-800'
-                       }`}
-                       disabled={isCurrentUserMember}
-                   >
-                       {isCurrentUserMember ? 'Already Joined' : 'Join'}
-                   </button>
-               </div>
+            <div className="border-t pt-5 pb-4 px-4 space-y-4 flex-shrink-0">
+                <div className="flex justify-center">
+                    <button 
+                        className={`border-0 cursor-pointer text-center w-full rounded-full py-3 transition-colors duration-200 ${
+                            isCurrentUserMember 
+                                ? 'bg-gray-300 text-gray-500 cursor-not-allowed' 
+                                : 'bg-black text-white hover:bg-gray-800'
+                        }`}
+                        disabled={isCurrentUserMember}
+                    >
+                        {isCurrentUserMember ? 'Already Joined' : 'Join'}
+                    </button>
+                </div>
             </div>
         </section>
     )

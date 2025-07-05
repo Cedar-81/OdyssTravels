@@ -92,7 +92,13 @@ export default function Rides() {
         <h2 className="text-base font-bold lg:text-2xl">
           {searchResults !== null ? "Search Results" : "Available Rides"}
         </h2>
-        <button onClick={() => navigate("/curate-trip")} className="px-6 cursor-pointer text-xs lg:text-base bg-black text-white py-2 rounded-full">Curate Ride</button>
+        <div>
+          <button onClick={() => navigate("/curate-trip")} className="!size-10 flex items-center justify-center cursor-pointer text-xs lg:text-base bg-black text-white rounded-full">
+            <svg width="24" height="24" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+              <path d="M11.5 12.5H6V11.5H11.5V6H12.5V11.5H18V12.5H12.5V18H11.5V12.5Z" fill="white"/>
+            </svg>
+          </button>
+        </div>
       </div>
       <section className="grid grid-cols-1 lg:grid-cols-3 xl:grid-cols-4 gap-4 bg-white py-10 px-8 lg:p-10">
         {loading && <div className="col-span-4 text-center">Loading rides...</div>}

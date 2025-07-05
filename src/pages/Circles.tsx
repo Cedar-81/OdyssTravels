@@ -65,11 +65,22 @@ export default function Circles() {
 
   return(
     <main className="bg-transparent">
-      <div className="flex justify-between px-10 items-center pt-10">
-        <h2 className="text-base font-bold lg:text-2xl">
-          {searchResults !== null ? "Search Results" : "Circles"}
-        </h2>
-        <button onClick={() => navigate("/create-circle")} className="px-6 cursor-pointer text-xs lg:text-base bg-black text-white py-2 rounded-full">Create Circle</button>
+      <div className="flex justify-between px-8 gap-8 items-center pt-10">
+        <div>
+          <h2 className="text-base font-bold lg:text-2xl">
+            {searchResults !== null ? "Search Results" : "Circles"} <br />
+          </h2>
+          <p className="text-xs leading-tight">
+            curate public circles for people with the same trip interests
+          </p>
+        </div>
+        <div>
+          <button onClick={() => navigate("/create-circle")} className="!size-10 flex items-center justify-center cursor-pointer text-xs lg:text-base bg-black text-white rounded-full">
+            <svg width="24" height="24" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+              <path d="M11.5 12.5H6V11.5H11.5V6H12.5V11.5H18V12.5H12.5V18H11.5V12.5Z" fill="white"/>
+            </svg>
+          </button>
+        </div>
       </div>
       <section className="grid grid-cols-1 lg:grid-cols-3 gap-3 bg-white px-8 py-10 lg:p-10">
         {loading && <div className="col-span-3 text-center">Loading circles...</div>}
