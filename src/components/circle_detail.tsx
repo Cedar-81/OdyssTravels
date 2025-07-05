@@ -1,6 +1,7 @@
 import { useState, useEffect } from "react";
 import { Avatar, AvatarFallback, AvatarImage } from "./ui/avatar";
 import type { Circle } from "@/services/circles";
+import TripInvitationModal from "./trip_invitation_modal";
 
 interface CircleDetailProps {
   circle: Circle;
@@ -9,6 +10,8 @@ interface CircleDetailProps {
 
 export default function CircleDetail({ circle, onClose }: CircleDetailProps)  {
     const [copySuccess, setCopySuccess] = useState(false);
+    const [inviteModalOpen, setInviteModalOpen] = useState(false);
+    const [selectedMember, setSelectedMember] = useState<{ name: string; id: string } | null>(null);
 
     // Prevent scroll on body when sidebar is open
     useEffect(() => {
@@ -38,7 +41,7 @@ export default function CircleDetail({ circle, onClose }: CircleDetailProps)  {
 
     // Handle copying the shareable link
     const handleInviteOthers = async () => {
-        const shareableLink = `${window.location.origin}/rides?trip_id=${circle.id}`;
+        const shareableLink = `${window.location.origin}/circles?circle_id=${circle.id}`;
         
         try {
             await navigator.clipboard.writeText(shareableLink);
@@ -50,19 +53,20 @@ export default function CircleDetail({ circle, onClose }: CircleDetailProps)  {
             }, 3000);
         } catch (err) {
             console.error('Failed to copy link:', err);
-            // Fallback for older browsers
-            const textArea = document.createElement('textarea');
-            textArea.value = shareableLink;
-            document.body.appendChild(textArea);
-            textArea.select();
-            document.execCommand('copy');
-            document.body.removeChild(textArea);
-            
-            setCopySuccess(true);
-            setTimeout(() => {
-                setCopySuccess(false);
-            }, 3000);
+            // Silently fail for copy errors - no need to show error to user
         }
+    };
+
+    // Handle opening invite to trip modal
+    const handleInviteToTrip = (memberName: string, memberId: string) => {
+        setSelectedMember({ name: memberName, id: memberId });
+        setInviteModalOpen(true);
+    };
+
+    // Handle closing invite modal
+    const handleCloseInviteModal = () => {
+        setInviteModalOpen(false);
+        setSelectedMember(null);
     };
 
     // Prevent scroll propagation
@@ -85,7 +89,7 @@ export default function CircleDetail({ circle, onClose }: CircleDetailProps)  {
                         <path d="M15.375 5.25L8.625 12L15.375 18.75" stroke="black" strokeWidth="2.25" strokeLinecap="round" strokeLinejoin="round"/>
                     </svg>
                     <div className="flex gap-2 items-center">
-                        <div className="flex w-[3.4rem] h-[3.5rem]">
+                        <div className="hidden w-[3.4rem] h-[3.5rem]">
                             <Avatar className="size-8 ">
                                 <AvatarImage src="https://github.com/shadcn.png" alt="@shadcn" />
                                 <AvatarFallback>CN</AvatarFallback>
@@ -129,9 +133,14 @@ export default function CircleDetail({ circle, onClose }: CircleDetailProps)  {
                                                 <p className="text-xs">{user.first_name} {user.last_name}</p>
                                             </div>
                                             {user.id !== currentUserId && (
-                                                <button className="text-xs border border-black rounded-full cursor-pointer px-3 py-1">
-                                                    invite
-                                                </button>
+                                                <div className="flex gap-2">
+                                                    <button 
+                                                        className="text-xs border border-black rounded-full cursor-pointer px-3 py-1 hover:bg-black hover:text-white transition-colors"
+                                                        onClick={() => handleInviteToTrip(`${user.first_name} ${user.last_name}`, user.id)}
+                                                    >
+                                                        invite to trip
+                                                    </button>
+                                                </div>
                                             )}
                                         </div>
                                     );
@@ -148,9 +157,14 @@ export default function CircleDetail({ circle, onClose }: CircleDetailProps)  {
                                                 <p className="text-xs">{member.first_name} {member.last_name}</p>
                                             </div>
                                             {member.user_id !== currentUserId && (
-                                                <button className="text-xs border border-black rounded-full cursor-pointer px-3 py-1">
-                                                    invite
-                                                </button>
+                                                <div className="flex gap-2">
+                                                    <button 
+                                                        className="text-xs border border-black rounded-full cursor-pointer px-3 py-1 hover:bg-black hover:text-white transition-colors"
+                                                        onClick={() => handleInviteToTrip(`${member.first_name} ${member.last_name}`, member.user_id)}
+                                                    >
+                                                        invite to trip
+                                                    </button>
+                                                </div>
                                             )}
                                         </div>
                                     );
@@ -188,6 +202,16 @@ export default function CircleDetail({ circle, onClose }: CircleDetailProps)  {
                     </button>
                 </div>
             </div>
+
+            {/* Trip Invitation Modal */}
+            {inviteModalOpen && selectedMember && (
+                <TripInvitationModal
+                    isOpen={inviteModalOpen}
+                    onClose={handleCloseInviteModal}
+                    memberName={selectedMember.name}
+                    memberId={selectedMember.id}
+                />
+            )}
         </section>
-    )
+    );
 }

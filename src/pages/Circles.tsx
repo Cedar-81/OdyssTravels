@@ -2,8 +2,9 @@ import { useEffect, useState } from "react";
 import CircleCard from "@/components/circle_card";
 import CircleDetail from "@/components/circle_detail";
 import { circlesService, type Circle } from "@/services/circles";
-import { useNavigate } from "react-router-dom";
+import { useNavigate, useSearchParams } from "react-router-dom";
 import { useSearch } from "@/contexts/SearchContext";
+import { getCircleError } from "../utils/errorHandling";
 
 function isCirclesResponse(data: any): data is { circles: Circle[] } {
   return data && typeof data === 'object' && Array.isArray(data.circles);
@@ -11,6 +12,7 @@ function isCirclesResponse(data: any): data is { circles: Circle[] } {
 
 export default function Circles() {
   const navigate = useNavigate();
+  const [searchParams] = useSearchParams();
   const { searchResults, clearSearchResults } = useSearch();
   const [circles, setCircles] = useState<Circle[]>([]);
   const [selectedCircle, setSelectedCircle] = useState<Circle | null>(null);
@@ -20,23 +22,43 @@ export default function Circles() {
   useEffect(() => {
     setLoading(true);
     setError(null);
-    circlesService.getAllCircles()
-      .then((data: any) => {
-        let circles: Circle[] = [];
-        if (Array.isArray(data)) {
-          circles = data;
-        } else if (isCirclesResponse(data)) {
-          circles = data.circles;
-        }
-        console.log("📋 Fetched all circles:", circles);
-        setCircles(circles);
-      })
-      .catch((err) => {
-        console.error("❌ Error fetching circles:", err);
-        setError(err?.message || "Unknown error");
-      })
-      .finally(() => setLoading(false));
-  }, []);
+    
+    // Check if there's a circle_id in the URL
+    const circleId = searchParams.get('circle_id');
+    
+    if (circleId) {
+      // Fetch specific circle
+      circlesService.getCircleDetails(circleId)
+        .then((circle: Circle) => {
+          console.log("📋 Fetched specific circle:", circle);
+          setCircles([circle]);
+          setSelectedCircle(circle);
+        })
+        .catch((err: any) => {
+          console.error("❌ Error fetching specific circle:", err);
+          setError(getCircleError(err));
+        })
+        .finally(() => setLoading(false));
+    } else {
+      // Fetch all circles
+      circlesService.getAllCircles()
+        .then((data: any) => {
+          let circles: Circle[] = [];
+          if (Array.isArray(data)) {
+            circles = data;
+          } else if (isCirclesResponse(data)) {
+            circles = data.circles;
+          }
+          console.log("📋 Fetched all circles:", circles);
+          setCircles(circles);
+        })
+        .catch((err) => {
+          console.error("❌ Error fetching circles:", err);
+          setError(getCircleError(err));
+        })
+        .finally(() => setLoading(false));
+    }
+  }, [searchParams]);
 
   // Log when search results change
   useEffect(() => {
@@ -82,7 +104,7 @@ export default function Circles() {
           </button>
         </div>
       </div>
-      <section className="grid grid-cols-1 lg:grid-cols-3 gap-3 bg-white px-8 py-10 lg:p-10">
+      <section className="grid grid-cols-1 lg:grid-cols-4 gap-3 bg-white px-8 py-10 lg:p-10">
         {loading && <div className="col-span-3 text-center">Loading circles...</div>}
         {error && <div className="col-span-3 text-center text-red-500">Error: {error}</div>}
         {!loading && !error && displayCircles.length === 0 && (

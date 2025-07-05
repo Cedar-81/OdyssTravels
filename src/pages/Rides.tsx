@@ -5,6 +5,7 @@ import RideDetail from "@/components/ride_detail";
 import { tripsService, type Trip } from "@/services/trips";
 import { useNavigate } from "react-router-dom";
 import { useSearch } from "@/contexts/SearchContext";
+import { getTripError } from "../utils/errorHandling";
 
 function isTripsResponse(data: any): data is { trips: Trip[] } {
   return data && typeof data === 'object' && Array.isArray(data.trips);
@@ -44,7 +45,7 @@ export default function Rides() {
       })
       .catch((err) => {
         console.error("❌ Error fetching trips:", err);
-        setError(err?.message || "Unknown error");
+        setError(getTripError(err));
       })
       .finally(() => setLoading(false));
   }, []);

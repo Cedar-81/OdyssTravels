@@ -29,7 +29,7 @@ export default function Form5({ formData, onChange, onSubmit, onPrevious, loadin
   };
 
     return(
-        <section className="space-y-8 w-full px-8 lg:px-0 lg:w-[30rem] flex flex-col items-center mx-auto mt-[10rem]">
+        <section className="space-y-8 w-full px-8 lg:px-0 lg:w-[30rem] flex flex-col items-center mx-auto mt-[5rem]">
             <div className="flex gap-2 w-full items-center">
                 <button 
                     className="p-1 hover:bg-gray-100 rounded-full transition-colors"

@@ -2,6 +2,7 @@ import { useState } from "react";
 import { useNavigate } from "react-router-dom";
 import { Input } from "@/components/ui/input";
 import { authService } from "@/services/auth";
+import { getAuthError } from "../utils/errorHandling";
 
 function validateEmail(email: string) {
     return /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email);
@@ -38,7 +39,7 @@ export default function Login() {
             setSuccess(true);
             navigate("/");
         } catch (err: any) {
-            setError(err?.response?.data?.message || err?.message || "Login failed");
+            setError(getAuthError(err));
         } finally {
             setLoading(false);
         }
@@ -46,7 +47,7 @@ export default function Login() {
 
     return(
         <main className="fixed top-0 right-0 h-screen px-8 w-full lg:w-screen bg-white z-50">
-            <section className="space-y-8 w-full lg:w-[30rem] flex flex-col items-center mx-auto mt-[10rem]">
+            <section className="space-y-8 w-full lg:w-[30rem] flex flex-col items-center mx-auto mt-[5rem]">
                 <div className="flex gap-2 w-full items-center">
                     <button 
                         className="p-1 hover:bg-gray-100 rounded-full transition-colors"

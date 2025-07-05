@@ -119,6 +119,15 @@ class TripsService {
     return apiService.get(`/trips/${tripId}/passengers`);
   }
 
+  // User trips
+  async getMyTrips(): Promise<{ trips: Trip[] }> {
+    return apiService.get<{ trips: Trip[] }>('/users/my_trips');
+  }
+
+  async inviteToTrip(tripId: string, userId: string): Promise<{ message: string }> {
+    return apiService.post(`/trips/${tripId}/invite`, { user_id: userId });
+  }
+
   // Company trips (for company users)
   async listCompanyTrips(): Promise<Trip[]> {
     return apiService.get<Trip[]>('/company/trips');

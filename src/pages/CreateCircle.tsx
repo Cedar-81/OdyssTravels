@@ -5,6 +5,7 @@ import { Select, SelectContent, SelectGroup, SelectItem, SelectLabel, SelectTrig
 import { DateRangePicker } from "@/components/ui/date_range_picker";
 import { circlesService } from "@/services/circles";
 import type { DateRange } from "react-day-picker";
+import { getCircleError } from "../utils/errorHandling";
 
 function validateCircleForm(data: any) {
   if (!data.name) return "Circle title is required.";
@@ -82,7 +83,7 @@ export default function CreateCircle() {
       // Redirect to circles page after successful creation
       navigate("/circles");
     } catch (err: any) {
-      setError(err?.response?.data?.message || err?.message || "Failed to create circle.");
+      setError(getCircleError(err));
     } finally {
       setLoading(false);
     }

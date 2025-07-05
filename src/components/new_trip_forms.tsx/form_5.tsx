@@ -1,6 +1,7 @@
 import { useState, useEffect, useRef } from 'react';
 import { Select, SelectContent, SelectGroup, SelectItem, SelectLabel, SelectTrigger, SelectValue } from "../ui/select";
 import { type CompanyRoute } from "@/services/users";
+import { showToast, toastMessages } from "@/utils/toast";
 
 interface Form5Props {
   onSubmit: () => void;
@@ -12,6 +13,7 @@ interface Form5Props {
     departureCity: string;
     destinationCity: string;
     tripTime: string;
+    selectedRoutePrice: number;
   };
   onFormDataChange: (field: string, value: any) => void;
   loading?: boolean;
@@ -24,45 +26,40 @@ export default function Form5({ onSubmit, onPrevious, formData, onFormDataChange
         refundPolicyAcknowledged: formData.refundPolicyAcknowledged,
         smartFillPolicy: formData.smartFillPolicy
     });
-    const [error, setError] = useState<string | null>(null);
     const priceSetRef = useRef(false);
 
     // Auto-set price based on selected route
     useEffect(() => {
-        if (formData.departureCity && formData.destinationCity && formData.tripTime && routes.length > 0 && !priceSetRef.current) {
-            const selectedRoute = routes.find(route => 
-                route.origin === formData.departureCity && 
-                route.destination === formData.destinationCity && 
-                route.dep_time === formData.tripTime
-            );
-            
-            if (selectedRoute) {
-                const price = selectedRoute.price.toString();
-                setLocalData(prev => ({ ...prev, tripPrice: price }));
-                onFormDataChange('tripPrice', price);
-                priceSetRef.current = true;
-            }
+        if (formData.selectedRoutePrice > 0 && !priceSetRef.current) {
+            const price = formData.selectedRoutePrice.toString();
+            setLocalData(prev => ({ ...prev, tripPrice: price }));
+            onFormDataChange('tripPrice', price);
+            priceSetRef.current = true;
         }
-    }, [formData.departureCity, formData.destinationCity, formData.tripTime, routes]);
+    }, [formData.selectedRoutePrice]);
 
-    // Fix: Always sync localData.refundPolicyAcknowledged with formData
+    // Sync localData with formData changes
     useEffect(() => {
-      setLocalData(prev => ({ ...prev, refundPolicyAcknowledged: formData.refundPolicyAcknowledged }));
-    }, [formData.refundPolicyAcknowledged]);
+      setLocalData(prev => ({ 
+        ...prev, 
+        refundPolicyAcknowledged: formData.refundPolicyAcknowledged,
+        smartFillPolicy: formData.smartFillPolicy
+      }));
+    }, [formData.refundPolicyAcknowledged, formData.smartFillPolicy]);
 
     const isValid = localData.tripPrice && localData.refundPolicyAcknowledged && localData.smartFillPolicy;
 
     const handleSubmit = () => {
         if (loading) return; // Prevent multiple submissions
         if (!isValid) {
-          setError("Please acknowledge the refund policy and select a smart fill policy.");
+          showToast.error(toastMessages.refundPolicyRequired);
           return;
         }
-        setError(null);
         // Update parent form data
         onFormDataChange('tripPrice', localData.tripPrice);
         onFormDataChange('refundPolicyAcknowledged', localData.refundPolicyAcknowledged);
         onFormDataChange('smartFillPolicy', localData.smartFillPolicy);
+        showToast.success(toastMessages.tripDetailsSaved);
         onSubmit();
     };
 
@@ -75,7 +72,7 @@ export default function Form5({ onSubmit, onPrevious, formData, onFormDataChange
     };
 
     return(
-        <section className="space-y-6 w-full px-8 lg:px-0 lg:w-[30rem] flex flex-col items-center mx-auto mt-[10rem]">
+        <section className="space-y-6 w-full px-8 lg:px-0 lg:w-[30rem] flex flex-col items-center mx-auto mt-[5rem] overflow-y-auto max-h-screen pb-20">
             <div className="flex gap-2 w-full items-center">
                 <button 
                     onClick={handlePrevious}
@@ -88,7 +85,7 @@ export default function Form5({ onSubmit, onPrevious, formData, onFormDataChange
                 <h1 className="text-xl font-semibold">Pricing & Plan B</h1>
             </div>
 
-            <div className="space-y-4 w-full">
+            <div className="space-y-4 w-full min-w-0">
                 <div className="flex flex-col space-y-2 border border-black rounded-xl px-4 pt-3 pb-2 w-full">
                     <label className="text-xs font-semibold" htmlFor="tripPrice">Trip price per seat (₦)</label>
                     <div className="text-sm py-2 px-0">
@@ -119,10 +116,13 @@ export default function Form5({ onSubmit, onPrevious, formData, onFormDataChange
                     <label className="text-xs font-semibold" htmlFor="smartFillPolicy">Smart Fill Policy Preference</label>
                     <Select 
                         value={localData.smartFillPolicy} 
-                        onValueChange={(value) => setLocalData(prev => ({ ...prev, smartFillPolicy: value }))}
+                        onValueChange={(value) => {
+                            setLocalData(prev => ({ ...prev, smartFillPolicy: value }));
+                            onFormDataChange('smartFillPolicy', value);
+                        }}
                     >
-                        <SelectTrigger className="w-full text-sm">
-                            <SelectValue className="text-sm" placeholder="Select your smart fill policy" />
+                        <SelectTrigger className="select-fixed-width text-sm">
+                            <SelectValue className="select-value-fixed text-sm" placeholder="Select your smart fill policy" />
                         </SelectTrigger>
                         <SelectContent className="text-sm">
                             <SelectGroup>
@@ -134,7 +134,6 @@ export default function Form5({ onSubmit, onPrevious, formData, onFormDataChange
                     </Select>
                 </div>
             </div>
-            {error && <div className="text-red-500 text-sm text-center">{error}</div>}
             <button 
                 onClick={handleSubmit}
                 className={`w-full py-3 text-center rounded-full text-white transition-colors ${isValid ? 'bg-black hover:bg-gray-800 cursor-pointer' : 'bg-gray-300 cursor-not-allowed'}`}

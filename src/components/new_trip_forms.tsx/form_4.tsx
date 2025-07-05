@@ -54,7 +54,7 @@ export default function Form4({ onNext, onPrevious, formData, onFormDataChange }
     };
 
     return(
-        <section className="space-y-6 w-full px-8 lg:px-0 lg:w-[30rem] flex flex-col items-center mx-auto mt-[10rem]">
+        <section className="space-y-6 w-full px-8 lg:px-0 lg:w-[30rem] flex flex-col items-center mx-auto mt-[5rem] overflow-y-auto max-h-screen pb-20">
             <div className="flex gap-2 w-full items-center">
                 <button 
                     onClick={handlePrevious}

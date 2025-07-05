@@ -1,5 +1,6 @@
 import { useState } from "react";
 import { authService } from "@/services/auth";
+import { getVerificationError } from "../../utils/errorHandling";
 
 export interface FormVerifyEmailProps {
   formData: any;
@@ -25,14 +26,14 @@ const FormVerifyEmail = ({ formData, onNext, onPrevious, loading }: FormVerifyEm
       await authService.verifyOTP({ email: formData.email, otp: code });
       onNext();
     } catch (err: any) {
-      setError(err?.response?.data?.message || err?.message || "Invalid verification code.");
+      setError(getVerificationError(err));
     } finally {
       setVerifying(false);
     }
   };
 
   return (
-    <section className="space-y-6 w-full px-8 lg:px-0 lg:w-[30rem] flex flex-col items-center mx-auto mt-[10rem]">
+    <section className="space-y-6 w-full px-8 lg:px-0 lg:w-[30rem] flex flex-col items-center mx-auto mt-[5rem]">
       <form className="space-y-4 w-full" onSubmit={handleSubmit}>
         <h2 className="text-lg font-semibold text-center">Verify your email</h2>
         <p className="text-xs text-center text-gray-500">We sent a verification code to <span className="font-semibold">{formData.email}</span>. Enter it below to continue.</p>

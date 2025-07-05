@@ -7,6 +7,7 @@ import Form5 from "@/components/signup_forms/form_5";
 import FormVerifyEmail from "../components/signup_forms/form_verify_email";
 import { authService } from "@/services/auth";
 import { useNavigate } from "react-router-dom";
+import { getSignupError } from "../utils/errorHandling";
 
 // Aggregate all fields needed for registration
 interface SignupFormData {
@@ -96,7 +97,7 @@ export default function Signup() {
         navigate("/login");
       }, 1500); // Give user 1.5 seconds to see the success message
     } catch (err: any) {
-      setError(err?.response?.data?.message || err?.message || "Signup failed");
+      setError(getSignupError(err));
     } finally {
       setLoading(false);
     }

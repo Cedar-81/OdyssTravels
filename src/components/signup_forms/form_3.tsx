@@ -1,6 +1,7 @@
 import { Input } from "../ui/input";
 import { useState } from "react";
 import { authService } from "@/services/auth";
+import { getVerificationError } from "../../utils/errorHandling";
 
 interface Form3Props {
   formData: any;
@@ -21,14 +22,14 @@ export default function Form3({ formData, onChange, onNext, onPrevious }: Form3P
             await authService.requestOTP(formData.email);
             onNext();
         } catch (err: any) {
-            setError(err?.response?.data?.message || err?.message || "Failed to send verification code.");
+            setError(getVerificationError(err));
         } finally {
             setLoading(false);
         }
     };
 
     return(
-        <section className="space-y-6 w-full px-8 lg:px-0 lg:w-[30rem] flex flex-col items-center mx-auto mt-[10rem]">
+        <section className="space-y-6 w-full px-8 lg:px-0 lg:w-[30rem] flex flex-col items-center mx-auto mt-[5rem]">
                 <div className="flex gap-2 w-full items-center">
                     <button 
                         className="p-1 hover:bg-gray-100 rounded-full transition-colors"

@@ -20,6 +20,8 @@ interface TripFormData {
   destinationCity: string;
   tripDate: Date | null;
   tripTime: string;
+  selectedRouteId: string;
+  selectedRoutePrice: number;
   
   // Form 4 data
   selectedVibes: string[];
@@ -54,6 +56,8 @@ export default function CurateTrip() {
     destinationCity: '',
     tripDate: null,
     tripTime: '',
+    selectedRouteId: '',
+    selectedRoutePrice: 0,
     selectedVibes: [],
     tripPrice: '',
     refundPolicyAcknowledged: false,
@@ -115,12 +119,6 @@ export default function CurateTrip() {
     const user = userStr ? JSON.parse(userStr) : null;
     const creator = user?.id || '';
     
-    // Get route_id from selected route
-    const selectedRoute = routes.find(route => 
-      route.origin === formData.departureCity && 
-      route.destination === formData.destinationCity
-    );
-    
     // Prepare trip data for payment
     const preparedTripData = {
       departureLoc: formData.departureCity,
@@ -128,7 +126,7 @@ export default function CurateTrip() {
       departureDate: formData.tripDate?.toISOString().split('T')[0] || '',
       arrivalDate: formData.tripDate?.toISOString().split('T')[0] || '',
       seats: Number(formData.seatCount),
-      price: Number(formData.tripPrice) || 0,
+      price: formData.selectedRoutePrice || Number(formData.tripPrice) || 0,
       vehicle: formData.vehicleType,
       memberIds: [],
       company: formData.transportPartner,
@@ -136,7 +134,7 @@ export default function CurateTrip() {
       creator: creator,
       fill: formData.smartFillPolicy === 'smart_fill',
       vibes: formData.selectedVibes,
-      route_id: selectedRoute?.id || ""
+      route_id: formData.selectedRouteId || ""
     };
     
     // Store trip data in localStorage for PaymentSuccess to access
@@ -198,8 +196,12 @@ export default function CurateTrip() {
     }
   };
 
+  const userStr = typeof window !== "undefined" ? localStorage.getItem("odyss_user") : null;
+  const user = userStr ? JSON.parse(userStr) : null;
+  const userEmail = user?.email || "";
+
   return (
-    <main className="fixed top-0 right-0 h-screen w-screen bg-white z-50">
+    <main className="fixed top-0 right-0 h-screen w-screen overflow-y-auto bg-white z-50">
       {/* Fixed Top Progress Bar and Home Button */}
       <div className="fixed top-0 left-0 right-0 z-50 bg-white shadow-sm">
         <div className="flex justify-center py-2">
@@ -238,7 +240,7 @@ export default function CurateTrip() {
       </div>
 
       {/* Form Container with Animation */}
-      <div className="h-full flex justify-center">
+      <div className="h-full flex justify-center ">
         {showPayment ? (
           <div className="animate-fadeIn">
             <div className="fixed z-50 w-screen h-screen items-center justify-center left-0 bg-black/50">
@@ -251,14 +253,14 @@ export default function CurateTrip() {
               <ReadyTripPayment 
                 key="trip-payment"
                 tripData={tripData} 
-                email={"divinewisdom.dev@gmail.com"} 
+                email={userEmail}
               />
             </div>
           </div>
         ) : (
           <div 
             key={currentStep}
-            className="animate-fadeIn"
+            className="animate-fadeIn w-full h-full flex items-start justify-center pt-20"
           >
             {renderStep()}
           </div>

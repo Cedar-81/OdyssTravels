@@ -1,6 +1,7 @@
 import { Input } from "../ui/input";
 import { useRef, useState } from "react";
 import { supabase } from "@/lib/supabase";
+import { getUploadError } from "../../utils/errorHandling";
 
 interface Form4Props {
   formData: any;
@@ -48,7 +49,7 @@ export default function Form4({ formData, onChange,  onNext, onPrevious }: Form4
         // Removed onImageChange call to prevent base64 conversion overriding the Supabase URL
       } catch (err: any) {
         console.error('Supabase upload error:', err);
-        setUploadError(err?.message || 'Failed to upload image. Please try again or contact support.');
+        setUploadError(getUploadError(err));
       } finally {
         setUploading(false);
       }
@@ -58,7 +59,7 @@ export default function Form4({ formData, onChange,  onNext, onPrevious }: Form4
   const canProceed = !!formData.profile_pic && !uploading;
 
   return(
-    <section className="space-y-6 w-full px-8 lg:px-0 lg:w-[30rem] flex flex-col items-center mx-auto mt-[10rem]">
+    <section className="space-y-6 w-full px-8 lg:px-0 lg:w-[30rem] flex flex-col items-center mx-auto mt-[5rem]">
       <div className="flex gap-2 w-full items-center">
         <button 
           className="p-1 hover:bg-gray-100 rounded-full transition-colors"

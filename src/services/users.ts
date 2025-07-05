@@ -47,13 +47,12 @@ export interface Company {
 export interface CompanyRoute {
   id: string;
   origin: string;
-  dep_time:  string;
+  dep_time: string;
   destination: string;
   company_id: string;
-  company_name: string;
   price: number;
-  is_active: boolean;
-  created_at: string;
+  terminal?: string;
+  vehicles?: string[];
 }
 
 export interface CompanyVehicle {

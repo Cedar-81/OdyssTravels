@@ -53,6 +53,7 @@ function Search() {
       }
     } catch (error) {
       console.error('❌ Search error:', error);
+      // Silently handle search errors - they're not critical for UX
     }
   };
 

@@ -1,6 +1,7 @@
 import { useEffect, useState } from 'react';
 import { useSearchParams, useNavigate } from 'react-router-dom';
 import { paymentsService } from '@/services/payments';
+import { getPaymentError } from "../utils/errorHandling";
 
 export default function PaymentSuccess() {
   const [searchParams] = useSearchParams();
@@ -38,6 +39,7 @@ export default function PaymentSuccess() {
               console.log('Retrieved trip data from localStorage:', tripData);
             } catch (err) {
               console.error('Failed to parse trip data from localStorage:', err);
+              setError('Unable to process payment data. Please contact support.');
             }
           }
           
@@ -81,7 +83,7 @@ export default function PaymentSuccess() {
         }
       } catch (err: any) {
         console.error('Payment verification error:', err);
-        setError(err?.response?.data?.message || err?.message || 'Payment verification failed');
+        setError(getPaymentError(err));
       } finally {
         setLoading(false);
       }

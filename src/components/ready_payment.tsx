@@ -1,5 +1,6 @@
 import { useState } from "react";
 import { paymentsService } from "@/services/payments";
+import { getPaymentError } from "../utils/errorHandling";
 
 interface ReadyPaymentProps {
   tripId: string;
@@ -22,7 +23,7 @@ export default function ReadyPayment({ tripId, email }: ReadyPaymentProps) {
                 setError(res.message || "No payment URL returned.");
             }
         } catch (err: any) {
-            setError(err?.message || "Payment failed. Try again.");
+            setError(getPaymentError(err));
         } finally {
             setLoading(false);
         }

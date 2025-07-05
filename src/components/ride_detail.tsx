@@ -1,6 +1,7 @@
 import { useEffect, useState } from "react";
 import { Avatar, AvatarFallback, AvatarImage } from "./ui/avatar";
 import { tripsService, type Trip } from "@/services/trips";
+import { getTripError } from "../utils/errorHandling";
 import clsx from "clsx";
 import ReadyPayment from "./ready_payment";
 
@@ -24,7 +25,7 @@ export default function RideDetail({ tripId, onClose }: RideDetailProps) {
         setTrip(trip);
         console.log('Fetched trip in RideDetail:', trip);
       })
-      .catch((err) => setError(err?.message || "Failed to load ride details"))
+      .catch((err) => setError(getTripError(err)))
       .finally(() => setLoading(false));
   }, [tripId]);
 
@@ -60,6 +61,18 @@ export default function RideDetail({ tripId, onClose }: RideDetailProps) {
     }
   }
 
+  function getUserEmailFromLocalStorage() {
+    if (typeof window === 'undefined') return '';
+    const userStr = localStorage.getItem('odyss_user');
+    if (!userStr) return '';
+    try {
+      const user = JSON.parse(userStr);
+      return user.email || '';
+    } catch {
+      return '';
+    }
+  }
+
   function isUserMember() {
     if (!trip) return false;
     const userId = getUserIdFromLocalStorage();
@@ -80,18 +93,7 @@ export default function RideDetail({ tripId, onClose }: RideDetailProps) {
       }, 3000);
     } catch (err) {
       console.error('Failed to copy link:', err);
-      // Fallback for older browsers
-      const textArea = document.createElement('textarea');
-      textArea.value = shareableLink;
-      document.body.appendChild(textArea);
-      textArea.select();
-      document.execCommand('copy');
-      document.body.removeChild(textArea);
-      
-      setCopySuccess(true);
-      setTimeout(() => {
-        setCopySuccess(false);
-      }, 3000);
+      // Silently fail for copy errors - no need to show error to user
     }
   };
 
@@ -257,7 +259,7 @@ export default function RideDetail({ tripId, onClose }: RideDetailProps) {
               <div className="fixed inset-0 z-[999] flex pt-[8rem] justify-center bg-black/40">
                 <div className="relative animate-in fade-in-0 zoom-in-95 duration-300 transition-all ease-out">
                   <button className="absolute top-2 right-2 text-2xl cursor-pointer font-bold text-black bg-white rounded-full px-2 z-10" onClick={() => setShowPayment(false)}>&times;</button>
-                  <ReadyPayment tripId={trip.id} email={"divinewisdom.dev@gmail.com"} />
+                  <ReadyPayment tripId={trip.id} email={getUserEmailFromLocalStorage()} />
                 </div>
               </div>
             )}

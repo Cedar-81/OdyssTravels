@@ -136,3 +136,19 @@ body {
     @apply bg-background text-foreground;
   }
 }
+/* Fix for select width adjustment on mobile */
+.select-fixed-width {
+  width: 100% !important;
+  min-width: 0 !important;
+  max-width: 100% !important;
+  flex-shrink: 1 !important;
+}
+
+.select-value-fixed {
+  width: 100% !important;
+  min-width: 0 !important;
+  max-width: 100% !important;
+  overflow: hidden !important;
+  text-overflow: ellipsis !important;
+  white-space: nowrap !important;
+}

@@ -11,6 +11,7 @@ import Login from './pages/Login';
 import Signup from './pages/Signup';
 import PaymentSuccess from './pages/PaymentSuccess';
 import { SearchProvider } from './contexts/SearchContext';
+import { Toaster } from './components/ui/sonner';
 
 function App() {
   return (
@@ -29,6 +30,7 @@ function App() {
           <Route path='/signup' element={<Signup />} />
           <Route path="/payment/success" element={<PaymentSuccess />} />
         </Routes>
+        <Toaster />
       </BrowserRouter>
     </SearchProvider>
   );
