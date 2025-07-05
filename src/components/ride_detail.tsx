@@ -222,7 +222,7 @@ export default function RideDetail({ tripId, onClose }: RideDetailProps) {
                         <h4 className="font-medium">{trip.days_left}</h4>
                         <p className="text-sm">left to trip</p>
                     </div>
-                </div>
+                </div>   
 
                 <div className="flex justify-center mt-5">
                   <button
