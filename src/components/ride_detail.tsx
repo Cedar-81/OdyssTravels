@@ -28,6 +28,14 @@ export default function RideDetail({ tripId, onClose }: RideDetailProps) {
       .finally(() => setLoading(false));
   }, [tripId]);
 
+  // Prevent scroll on body when sidebar is open
+  useEffect(() => {
+    document.body.style.overflow = 'hidden';
+    return () => {
+      document.body.style.overflow = 'unset';
+    };
+  }, []);
+
   // Helper to format date/time to '13 July, 2025 10AM'
   function formatDateTime(dateStr: string) {
     if (!dateStr) return '';
@@ -87,6 +95,11 @@ export default function RideDetail({ tripId, onClose }: RideDetailProps) {
     }
   };
 
+  // Prevent scroll propagation
+  const handleScroll = (e: React.WheelEvent) => {
+    e.stopPropagation();
+  };
+
   if (loading) {
     return (
       <section className="shadow-2xl fixed w-[22rem] top-0 right-0 h-screen z-50 bg-white flex items-center justify-center">
@@ -103,8 +116,11 @@ export default function RideDetail({ tripId, onClose }: RideDetailProps) {
   }
 
   return(
-        <section className="shadow-2xl space-y-6 fixed w-[22rem] overflow-y-auto top-0 right-0 h-screen z-50 bg-white flex flex-col">
-            <div className="px-3 py-6 h-[10rem] border space-y-4 rounded-b-xl shadow-xl">
+        <section 
+          className="shadow-2xl fixed w-[22rem] top-0 right-0 h-screen z-50 bg-white flex flex-col overflow-hidden"
+          onWheel={handleScroll}
+        >
+            <div className="px-3 py-6 h-[10rem] border space-y-4 rounded-b-xl shadow-xl flex-shrink-0">
                 <div className="flex gap-2 items-center">
                     <svg className="h-5 cursor-pointer" width="24" height="24" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg" onClick={onClose}>
                         <path d="M15.375 5.25L8.625 12L15.375 18.75" stroke="black" strokeWidth="2.25" strokeLinecap="round" strokeLinejoin="round"/>
@@ -130,81 +146,83 @@ export default function RideDetail({ tripId, onClose }: RideDetailProps) {
                 </div>
             </div>
             
-            <div className="space-y-4 flex-1 px-4">
-                <div className="space-y-4">
-                    <h2 className="font-medium">Travel buddies</h2>
-                    <div className="flex flex-col px-2 gap-3">
-                        {trip.users.length === 0 && <div className="text-xs text-gray-400">No travel buddies yet.</div>}
-                        {trip.users.map((user) => {
-                          const initials = `${user.first_name?.[0] || ''}${user.last_name?.[0] || ''}`.toUpperCase();
-                          return (
-                            <div className="flex gap-2 items-center" key={user.id}>
-                              <Avatar className="size-5">
-                                {user.avatar ? (
-                                  <AvatarImage src={user.avatar} alt={user.first_name + ' ' + user.last_name} />
-                                ) : null}
-                                <AvatarFallback>{initials}</AvatarFallback>
-                              </Avatar>
-                              <p className="text-xs">{user.first_name} {user.last_name}</p>
+            <div className="flex-1 overflow-y-auto px-4 py-4">
+                <div className="space-y-6">
+                    <div className="space-y-4">
+                        <h2 className="font-medium">Travel buddies</h2>
+                        <div className="flex flex-col px-2 gap-3">
+                            {trip.users.length === 0 && <div className="text-xs text-gray-400">No travel buddies yet.</div>}
+                            {trip.users.map((user) => {
+                              const initials = `${user.first_name?.[0] || ''}${user.last_name?.[0] || ''}`.toUpperCase();
+                              return (
+                                <div className="flex gap-2 items-center" key={user.id}>
+                                  <Avatar className="size-5">
+                                    {user.avatar ? (
+                                      <AvatarImage src={user.avatar} alt={user.first_name + ' ' + user.last_name} />
+                                    ) : null}
+                                    <AvatarFallback>{initials}</AvatarFallback>
+                                  </Avatar>
+                                  <p className="text-xs">{user.first_name} {user.last_name}</p>
+                                </div>
+                              );
+                            })}
+                        </div>
+
+                        <div className="w-full flex justify-end">
+                            <button 
+                                className={`text-xs border border-black rounded-full cursor-pointer px-5 py-1 transition-colors duration-200 ${
+                                    copySuccess ? 'bg-green-500 text-white border-green-500' : 'hover:bg-black hover:text-white'
+                                }`}
+                                onClick={handleInviteOthers}
+                            >
+                                {copySuccess ? 'Copied!' : 'invite others'}
+                            </button>
+                        </div>
+                    </div>
+
+                    <div className="space-y-4">
+                        <h2 className="font-medium">Smart fill policy</h2>
+
+                        <div className="flex flex-col px-2 gap-5">
+                            <div className="flex justify-between items-center">
+                                <p className="text-xs">Split the Remaining Cost</p>
+                                <svg className={clsx("h-3", trip.fill ? "hidden" : "")} width="16" height="16" viewBox="0 0 16 16" fill="none" xmlns="http://www.w3.org/2000/svg">
+                                    <path d="M0.273438 8.93973L4.0001 12.6664L4.9401 11.7197L1.2201 7.99973M14.8268 3.71973L7.77344 10.7797L5.0001 7.99973L4.04677 8.93973L7.77344 12.6664L15.7734 4.66639M12.0001 4.66639L11.0601 3.71973L6.82677 7.95306L7.77344 8.89306L12.0001 4.66639Z" fill="black"/>
+                                </svg>
                             </div>
-                          );
-                        })}
-                    </div>
-
-                    <div className="w-full flex justify-end">
-                        <button 
-                            className={`text-xs border border-black rounded-full cursor-pointer px-5 py-1 transition-colors duration-200 ${
-                                copySuccess ? 'bg-green-500 text-white border-green-500' : 'hover:bg-black hover:text-white'
-                            }`}
-                            onClick={handleInviteOthers}
-                        >
-                            {copySuccess ? 'Copied!' : 'invite others'}
-                        </button>
-                    </div>
-                </div>
-
-                <div className="space-y-4">
-                    <h2 className="font-medium">Smart fill policy</h2>
-
-                    <div className="flex flex-col px-2 gap-5">
-                        <div className="flex justify-between items-center">
-                            <p className="text-xs">Split the Remaining Cost</p>
-                            <svg className={clsx("h-3", trip.fill ? "hidden" : "")} width="16" height="16" viewBox="0 0 16 16" fill="none" xmlns="http://www.w3.org/2000/svg">
-                                <path d="M0.273438 8.93973L4.0001 12.6664L4.9401 11.7197L1.2201 7.99973M14.8268 3.71973L7.77344 10.7797L5.0001 7.99973L4.04677 8.93973L7.77344 12.6664L15.7734 4.66639M12.0001 4.66639L11.0601 3.71973L6.82677 7.95306L7.77344 8.89306L12.0001 4.66639Z" fill="black"/>
-                            </svg>
-                        </div>
-                        <div className="flex justify-between items-center">
-                            <p className="text-xs">Allow Offline Fill-In</p>
-                            <svg className={clsx("h-3", trip.fill ? "" : "hidden")}width="16" height="16" viewBox="0 0 16 16" fill="none" xmlns="http://www.w3.org/2000/svg">
-                                <path d="M0.273438 8.93973L4.0001 12.6664L4.9401 11.7197L1.2201 7.99973M14.8268 3.71973L7.77344 10.7797L5.0001 7.99973L4.04677 8.93973L7.77344 12.6664L15.7734 4.66639M12.0001 4.66639L11.0601 3.71973L6.82677 7.95306L7.77344 8.89306L12.0001 4.66639Z" fill="black"/>
-                            </svg>
+                            <div className="flex justify-between items-center">
+                                <p className="text-xs">Allow Offline Fill-In</p>
+                                <svg className={clsx("h-3", trip.fill ? "" : "hidden")}width="16" height="16" viewBox="0 0 16 16" fill="none" xmlns="http://www.w3.org/2000/svg">
+                                    <path d="M0.273438 8.93973L4.0001 12.6664L4.9401 11.7197L1.2201 7.99973M14.8268 3.71973L7.77344 10.7797L5.0001 7.99973L4.04677 8.93973L7.77344 12.6664L15.7734 4.66639M12.0001 4.66639L11.0601 3.71973L6.82677 7.95306L7.77344 8.89306L12.0001 4.66639Z" fill="black"/>
+                                </svg>
+                            </div>
                         </div>
                     </div>
-                </div>
 
-                <div className="space-y-4 mt-8">
-                    <h2 className="font-medium">Refund Eligibility</h2>
+                    <div className="space-y-4">
+                        <h2 className="font-medium">Refund Eligibility</h2>
 
-                    <div className="flex flex-col px-2 gap-5">
-                        <div className="flex gap-4">
-                            <svg className="h-1 mt-2" width="24" height="24" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
-                                <circle cx="12" cy="12" r="12" fill="black"/>
-                            </svg>
+                        <div className="flex flex-col px-2 gap-5">
+                            <div className="flex gap-4">
+                                <svg className="h-1 mt-2" width="24" height="24" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+                                    <circle cx="12" cy="12" r="12" fill="black"/>
+                                </svg>
 
-                            <p className="text-xs">You are eligible for a full refund if you cancel your booking at least 3 days (72 hours) before the scheduled trip date.</p>
-                        </div>
-                        <div className="flex gap-4">
-                            <svg className="h-1 mt-2" width="24" height="24" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
-                                <circle cx="12" cy="12" r="12" fill="black"/>
-                            </svg>
+                                <p className="text-xs">You are eligible for a full refund if you cancel your booking at least 3 days (72 hours) before the scheduled trip date.</p>
+                            </div>
+                            <div className="flex gap-4">
+                                <svg className="h-1 mt-2" width="24" height="24" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+                                    <circle cx="12" cy="12" r="12" fill="black"/>
+                                </svg>
 
-                            <p className="text-xs">Refunds will be processed within 5–7 business days to your original payment method.</p>
+                                <p className="text-xs">Refunds will be processed within 5–7 business days to your original payment method.</p>
+                            </div>
                         </div>
                     </div>
                 </div>
             </div>
 
-            <div className="border-t pt-5 pb-4 px-4 space-y-4">
+            <div className="border-t pt-5 pb-4 px-4 space-y-4 flex-shrink-0">
                 <div className="flex items-center justify-between text-sm"><h3 className="font-medium">{trip.company}</h3> <p><span className="font-medium capitalize">Vehicle: </span> {trip.vehicle}</p></div>
             
                 <div className="flex justify-between">
