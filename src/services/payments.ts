@@ -100,7 +100,7 @@ class PaymentsService {
   }
 
   async verifyTripPayment(data: TripPaymentVerificationData): Promise<{
-    status: 'success' | 'failed';
+    status: string;
     message: string;
     booking_id: string;
     trip_details?: Record<string, any>;
@@ -109,10 +109,12 @@ class PaymentsService {
   }
 
   async verifyJoinTripPayment(data: { reference: string }): Promise<{
-    status: 'success' | 'failed';
+    status: string;
     message: string;
-    circle_id: string;
-    membership_details?: Record<string, any>;
+    booking_id: string;
+    trip_id: string;
+    seat_number: string;
+    booking_status: string;
   }> {
     return apiService.post('/payments/verify-join-trip', data);
   }

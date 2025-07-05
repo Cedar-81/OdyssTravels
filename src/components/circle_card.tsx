@@ -3,16 +3,6 @@ import { Avatar, AvatarFallback, AvatarImage } from "./ui/avatar";
 import type { Circle } from "@/services/circles";
 import { circlesService } from "@/services/circles";
 
-function getUserIdFromToken(token: string | null): string | null {
-    if (!token) return null;
-    try {
-        const payload = JSON.parse(atob(token.split(".")[1]));
-        return payload.user_id || payload.sub || payload.id || null;
-    } catch {
-        return null;
-    }
-}
-
 interface CircleCardProps {
   circle: Circle;
   onJoin: (circle: Circle) => void;
@@ -24,10 +14,20 @@ export default function CircleCard({ circle, onJoin }: CircleCardProps) {
     const [error, setError] = useState<string | null>(null);
 
     useEffect(() => {
-        const token = localStorage.getItem('access_token');
-        const userId = getUserIdFromToken(token);
-        if (userId && (circle.users?.includes(userId) || circle.members?.some(m => m.user_id === userId))) {
-            setJoined(true);
+        // Get current user from localStorage
+        const userStr = localStorage.getItem('odyss_user');
+        if (userStr) {
+            try {
+                const user = JSON.parse(userStr);
+                const userId = user.id;
+                
+                // Check if user is in the circle.users array
+                if (userId && Array.isArray(circle.users) && circle.users.some(user => user.id === userId)) {
+                    setJoined(true);
+                }
+            } catch (err) {
+                console.error("Error parsing user data:", err);
+            }
         }
     }, [circle]);
 
@@ -56,7 +56,7 @@ export default function CircleCard({ circle, onJoin }: CircleCardProps) {
     }
 
     return(
-        <div className="flex gap-3 lg:items-center bg-black/5 rounded-xl overflow-clip p-6">
+        <div className="flex gap-3 bg-black/5 rounded-xl overflow-clip p-6">
             <div className="hidden lg:flex w-[3.4rem] h-[3.5rem]">
                 <Avatar className="size-8 ">
                     <AvatarImage src="https://github.com/shadcn.png" alt="@shadcn" />

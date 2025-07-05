@@ -136,6 +136,7 @@ class AuthService {
   clearTokens(): void {
     localStorage.removeItem('access_token');
     localStorage.removeItem('refresh_token');
+    localStorage.removeItem('odyss_user');
   }
 
   isAuthenticated(): boolean {

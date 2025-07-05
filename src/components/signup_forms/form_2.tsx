@@ -54,7 +54,17 @@ export default function Form2({ formData, onChange, onNext, onPrevious }: Form2P
                 </div>
                 <div className="flex flex-col space-y-2 border border-black rounded-xl px-4 pt-3 pb-2 w-full">
                     <label className="text-xs font-semibold" >Date of birth</label>
-                    <DatePicker />
+                    <DatePicker 
+                        date={formData.date_of_birth ? new Date(formData.date_of_birth) : null}
+                        onDateChange={(date) => {
+                            if (date) {
+                                // Convert Date to ISO string format for backend
+                                onChange("date_of_birth", date.toISOString().split('T')[0]);
+                            } else {
+                                onChange("date_of_birth", "");
+                            }
+                        }}
+                    />
                 </div>       
                 <div className="flex gap-2">
                   <button 

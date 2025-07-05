@@ -18,6 +18,7 @@ interface SignupFormData {
   bio: string;
   phone_number: string;
   profile_pic: string;
+  intro_video: string;
   date_of_birth: string;
   vibes: string[];
   access_code: string;
@@ -32,6 +33,7 @@ const initialFormData: SignupFormData = {
   bio: "",
   phone_number: "",
   profile_pic: "",
+  intro_video: "",
   date_of_birth: "",
   vibes: [],
   access_code: "",
@@ -82,8 +84,17 @@ export default function Signup() {
     setError("");
     setSuccess(false);
     try {
+      console.log("form data: ", formData)
       await authService.register(formData);
       setSuccess(true);
+      // Clear form data after successful signup
+      setFormData(initialFormData);
+      // Reset to first step
+      setStep(1);
+      // Redirect to login page after successful signup
+      setTimeout(() => {
+        navigate("/login");
+      }, 1500); // Give user 1.5 seconds to see the success message
     } catch (err: any) {
       setError(err?.response?.data?.message || err?.message || "Signup failed");
     } finally {
@@ -176,10 +187,10 @@ export default function Signup() {
   }
 
   return (
-    <main className="fixed top-0 right-0 h-screen w-screen bg-white z-50">
+    <main className="fixed top-0 right-0 h-screen overflow-y-auto overflow-x-hidden w-screen bg-white z-50">
       {/* Fixed Top Progress Bar and Home Button */}
       <div className="fixed top-0 left-0 right-0 z-50 bg-white shadow-sm">
-        <div className="flex justify-center pt-4 pb-1">
+        <div className="flex justify-center py-2">
           <div className="group flex items-center cursor-pointer" onClick={() => navigate("/")}>
             <svg
               className="h-6 w-6 text-black transition-transform duration-200"
@@ -216,6 +227,8 @@ export default function Signup() {
       <div className="h-full flex justify-center">
         {content}
       </div>
+
+      <div className="h-[5rem] lg:hidden"></div>
     </main>
   );
 }

@@ -34,13 +34,17 @@ export default function RideCard({ trip, onJoin }: RideCardProps) {
         } catch {}
       }
     }
+
+    // Ensure users array exists and is an array
+    const users = Array.isArray(trip.users) ? trip.users : [];
+    
     return(
         <div className="bg-black/5 rounded-xl flex flex-col overflow-clip p-6 gap-7">
             <div className="flex gap-16 justify-between">
                 <div className="flex items-center gap-2 font-medium">
                     <div className="*:data-[slot=avatar]:ring-background flex -space-x-5 *:data-[slot=avatar]:ring-2 *:data-[slot=avatar]:grayscale">
                         {/* Show up to 3 avatars from trip.users */}
-                        {trip.users.slice(0, 3).map((user, idx) => {
+                        {users.slice(0, 3).map((user, idx) => {
                           const initials = ((user.first_name?.[0] || '') + (user.last_name?.[0] || '')).toUpperCase();
                           return (
                             <Avatar className="size-8 rounded-full overflow-clip" key={idx}>
@@ -55,16 +59,16 @@ export default function RideCard({ trip, onJoin }: RideCardProps) {
 
                     {/* Truncate name to 5 chars + ... if longer */}
                     <h2 className="text-sm">
-                      {trip.users.length > 0 && (
-                        trip.users.length > 1
-                          ? `${trip.users[0].name.length > 5 ? trip.users[0].name.slice(0, 5) + '...' : trip.users[0].name} and ${trip.users.length - 1} others`
-                          : (trip.users[0].name.length > 5 ? trip.users[0].name.slice(0, 5) + '...' : trip.users[0].name)
+                      {users.length > 0 && (
+                        users.length > 1
+                          ? `${users[0].name.length > 5 ? users[0].name.slice(0, 5) + '...' : users[0].name} and ${users.length - 1} others`
+                          : (users[0].name.length > 5 ? users[0].name.slice(0, 5) + '...' : users[0].name)
                       )}
                     </h2>
                 </div>
                 
                 <button 
-                  className="text-sm cursor-pointer rounded-full bg-black text-white px-5 py-1"
+                  className="text-sm cursor-pointer rounded-full bg-black text-white px-5 py-1 h-10 min-w-max"
                   onClick={() => onJoin(trip)}
                 >{isMember ? 'View' : 'Join'}</button>
             </div>

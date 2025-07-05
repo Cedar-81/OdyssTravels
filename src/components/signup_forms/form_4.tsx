@@ -10,7 +10,7 @@ interface Form4Props {
   onPrevious: () => void;
 }
 
-export default function Form4({ formData, onChange, onImageChange, onNext, onPrevious }: Form4Props) {
+export default function Form4({ formData, onChange,  onNext, onPrevious }: Form4Props) {
   const fileInputRef = useRef<HTMLInputElement>(null);
   const [uploading, setUploading] = useState(false);
   const [uploadError, setUploadError] = useState("");
@@ -26,17 +26,29 @@ export default function Form4({ formData, onChange, onImageChange, onNext, onPre
       setUploading(true);
       setUploadError("");
       try {
+        // Check if Supabase is properly configured
+        const supabaseUrl = import.meta.env.VITE_SUPABASE_URL;
+        const supabaseKey = import.meta.env.VITE_SUPABASE_ANON_KEY;
+        
+        if (!supabaseUrl || !supabaseKey || supabaseUrl === 'https://placeholder.supabase.co') {
+          throw new Error('Supabase is not properly configured. Please check your environment variables.');
+        }
+
         const fileExt = file.name.split('.').pop();
         const fileName = `${Date.now()}-${Math.random().toString(36).substring(2, 8)}.${fileExt}`;
         const filePath = `profile_pics/${fileName}`;
+        
         const { error } = await supabase.storage.from('user-media').upload(filePath, file);
         if (error) throw error;
+        
         const { data: publicUrlData } = supabase.storage.from('user-media').getPublicUrl(filePath);
         if (!publicUrlData?.publicUrl) throw new Error('Failed to get public URL');
+        
         onChange('profile_pic', publicUrlData.publicUrl);
-        onImageChange(file); // Optionally keep this for preview
+        // Removed onImageChange call to prevent base64 conversion overriding the Supabase URL
       } catch (err: any) {
-        setUploadError(err?.message || 'Failed to upload image');
+        console.error('Supabase upload error:', err);
+        setUploadError(err?.message || 'Failed to upload image. Please try again or contact support.');
       } finally {
         setUploading(false);
       }

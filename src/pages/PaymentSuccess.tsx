@@ -23,10 +23,57 @@ export default function PaymentSuccess() {
 
         console.log('Verifying payment with reference:', reference);
 
-        // Call the verifyJoinTripPayment service
-        const result = await paymentsService.verifyJoinTripPayment({ reference });
+        // Determine payment type based on reference prefix
+        let result;
+        if (reference.startsWith('ODYSS-TRIP')) {
+          // Trip creation payment
+          console.log('Detected trip creation payment');
+          
+          // Get trip data from localStorage
+          const tripDataStr = localStorage.getItem('pending_trip_data');
+          let tripData = null;
+          if (tripDataStr) {
+            try {
+              tripData = JSON.parse(tripDataStr);
+              console.log('Retrieved trip data from localStorage:', tripData);
+            } catch (err) {
+              console.error('Failed to parse trip data from localStorage:', err);
+            }
+          }
+          
+          result = await paymentsService.verifyTripPayment({ 
+            reference,
+            trip: tripData || {
+              departureLoc: '', // Fallback if no trip data found
+              arrivalLoc: '',
+              departureDate: '',
+              arrivalDate: '',
+              seats: 0,
+              price: 0,
+              vehicle: '',
+              company: '',
+              departureTOD: '',
+              creator: '',
+            }
+          });
+          console.log("verify curate: ", result)
+          
+          // Clear the stored trip data after successful verification
+          if (result.status === 'success' || result.status === 'paid') {
+            localStorage.removeItem('pending_trip_data');
+          }
+        } else if (reference.startsWith('ODYSS-JOIN')) {
+          // Join trip payment
+          console.log('Detected join trip payment');
+          result = await paymentsService.verifyJoinTripPayment({ reference });
+          console.log()
+        } else {
+          // Fallback to join trip payment for backward compatibility
+          console.log('Using fallback verification method');
+          result = await paymentsService.verifyJoinTripPayment({ reference });
+        }
         
-        if (result.status === 'success') {
+        if (result.status === 'success' || result.status === 'paid') {
           setSuccess(true);
           console.log('Payment verification successful:', result);
         } else {
@@ -74,13 +121,13 @@ export default function PaymentSuccess() {
             <div className="space-y-2">
               <h1 className="text-2xl font-bold text-gray-900">Payment Successful!</h1>
               <p className="text-gray-600">
-                Your trip booking has been confirmed. You're now a member of this trip!
+                Your payment has been verified and your booking is confirmed!
               </p>
             </div>
 
             <div className="bg-green-50 border border-green-200 rounded-lg p-4">
               <p className="text-sm text-green-800">
-                You'll receive a confirmation email shortly with all the trip details.
+                Congratulations! Your transaction is complete. Check your rides page for trip details.
               </p>
             </div>
 

@@ -1,26 +1,35 @@
 import { apiService } from './api';
 
-export interface Booking {
-  id: string;
+export interface TripInBooking {
   trip_id: string;
-  user_id: string;
-  passenger_count: number;
-  total_amount: number;
-  status: 'pending' | 'confirmed' | 'cancelled' | 'completed';
-  seat_numbers: string[];
-  passenger_details: Array<{
-    first_name: string;
-    last_name: string;
-    phone?: string;
-  }>;
+  origin: string;
+  destination: string;
+  departure_time: string;
+  arrival_time: string;
+  departure_tod: string;
+  price: number;
+  seats: number;
+  seats_available: number;
+  status: string;
+  vehicle: string;
+  fill: boolean;
+  memberIds: string[];
+  vibes: string[];
+  creator: string;
   created_at: string;
   updated_at: string;
-  trip?: {
-    origin: string;
-    destination: string;
-    departure_time: string;
-    company_name: string;
-  };
+}
+
+
+export interface Booking {
+  booking: {
+    booking_id: string;
+    user_id: string;
+    seat_number: number;
+    status: string; // e.g. "paid"
+    created_at: string;
+  }
+  trip: TripInBooking;
 }
 
 export interface CreateBookingData {

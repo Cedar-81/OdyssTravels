@@ -1,12 +1,27 @@
 import { useState } from "react";
 import { paymentsService } from "@/services/payments";
 
-interface ReadyPaymentProps {
-  tripId: string;
+interface ReadyTripPaymentProps {
+  tripData: {
+    departureLoc: string;
+    arrivalLoc: string;
+    departureDate: string;
+    arrivalDate: string;
+    seats: number;
+    price: number;
+    vehicle: string;
+    memberIds: string[];
+    company: string;
+    departureTOD: string;
+    creator: string;
+    fill: boolean;
+    vibes: string[];
+    route_id: string;
+  };
   email: string;
 }
 
-export default function ReadyPayment({ tripId, email }: ReadyPaymentProps) {
+export default function ReadyTripPayment({ tripData, email }: ReadyTripPaymentProps) {
     const [loading, setLoading] = useState(false);
     const [error, setError] = useState<string | null>(null);
 
@@ -14,16 +29,27 @@ export default function ReadyPayment({ tripId, email }: ReadyPaymentProps) {
         setLoading(true);
         setError(null);
         try {
-            console.log("tripid, email", tripId, email)
-            const res = await paymentsService.joinTripPayment({ trip_id: tripId, email });
+            const res = await paymentsService.initiateTripPayment({
+                departureLoc: tripData.departureLoc,
+                arrivalLoc: tripData.arrivalLoc,
+                departureDate: tripData.departureDate,
+                arrivalDate: tripData.arrivalDate,
+                seats: tripData.seats,
+                price: tripData.price,
+                vehicle: tripData.vehicle,
+                company: tripData.company,
+                departureTOD: tripData.departureTOD,
+                creator: tripData.creator,
+                email: email
+            });
+            
             if (res.authorization_url) {
                 window.location.href = res.authorization_url;
             } else {
-                setError(res.message || "No payment URL returned.");
+                setError("No payment URL returned.");
             }
         } catch (err: any) {
             setError(err?.message || "Payment failed. Try again.");
-        } finally {
             setLoading(false);
         }
     };
@@ -38,8 +64,9 @@ export default function ReadyPayment({ tripId, email }: ReadyPaymentProps) {
 
             <div className="space-y-4 text-center">
                 <h1 className="text-xl font-semibold">Almost done!!!</h1>
-                <p  className="text-sm">Book trip to confirm your travel and get involved with your travel buddies.</p>
+                <p  className="text-sm">Create your trip to start your journey and connect with fellow travelers.</p>
             </div>
+
             {error && <div className="text-red-500 text-sm text-center">{error}</div>}
             <button 
                 className="w-full cursor-pointer py-3 text-center rounded-full text-white bg-black hover:bg-gray-800 transition-colors disabled:opacity-60" 
@@ -50,4 +77,4 @@ export default function ReadyPayment({ tripId, email }: ReadyPaymentProps) {
             </button>
         </section>
     );
-}
+} 

@@ -1,5 +1,14 @@
 import { apiService } from './api';
 
+export interface CircleUser {
+  id: string;
+  avatar?: string;
+  email: string;
+  first_name: string;
+  last_name: string;
+  nickname?: string;
+}
+
 export interface Circle {
   id: string;
   name: string;
@@ -8,7 +17,7 @@ export interface Circle {
   destination: string;
   startDate: string;
   endDate: string;
-  users: string[];
+  users: CircleUser[];
   created_at?: string;
   updated_at?: string;
   members?: CircleMember[];

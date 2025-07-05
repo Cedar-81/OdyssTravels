@@ -84,7 +84,7 @@ export default function Form2({ onNext, onPrevious, formData, onFormDataChange }
                             <SelectGroup>
                                 <SelectLabel>Odyss transport partners</SelectLabel>
                                 {companies.map(company => (
-                                  <SelectItem key={company.id} value={company.id}>{company.company_name}</SelectItem>
+                                  <SelectItem key={company.id} value={company.company_name}>{company.company_name}</SelectItem>
                                 ))}
                             </SelectGroup>
                         </SelectContent>

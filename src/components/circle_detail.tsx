@@ -44,6 +44,15 @@ export default function CircleDetail({ circle, onClose }: CircleDetailProps)  {
                     <h2 className="font-medium">Members</h2>
                     <div className="flex flex-col px-2 gap-3">
                         {/* Members rendering can be added here */}
+                        {/* <div className="flex gap-2 items-center" key={user.id}>
+                              <Avatar className="size-5">
+                                {user.avatar ? (
+                                  <AvatarImage src={user.avatar} alt={user.first_name + ' ' + user.last_name} />
+                                ) : null}
+                                <AvatarFallback>{initials}</AvatarFallback>
+                              </Avatar>
+                              <p className="text-xs">{user.first_name} {user.last_name}</p>
+                        </div> */}
                     </div>
                 </div>
             </div>

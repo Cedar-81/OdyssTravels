@@ -10,24 +10,27 @@ import Navbar from './components/Navbar';
 import Login from './pages/Login';
 import Signup from './pages/Signup';
 import PaymentSuccess from './pages/PaymentSuccess';
+import { SearchProvider } from './contexts/SearchContext';
 
 function App() {
   return (
-    <BrowserRouter>
-      <Navbar />
-      <Routes>
-        <Route path="/" element={<Navigate to="/rides" replace />} />
-        <Route path="/rides" element={<Rides />} />
-        <Route path="/rides/:id" element={<RideDetail />} />
-        <Route path="/circles" element={<Circles />} />
-        <Route path="/circle/:id" element={<CircleDetail />} />
-        <Route path="/curate-trip" element={<CurateTrip />} />
-        <Route path="/create-circle" element={<CreateCircle />} />
-        <Route path="/login" element={<Login />} />
-        <Route path='/signup' element={<Signup />} />
-        <Route path="/payment/success" element={<PaymentSuccess />} />
-      </Routes>
-    </BrowserRouter>
+    <SearchProvider>
+      <BrowserRouter>
+        <Navbar />
+        <Routes>
+          <Route path="/" element={<Navigate to="/rides" replace />} />
+          <Route path="/rides" element={<Rides />} />
+          <Route path="/rides/:id" element={<RideDetail />} />
+          <Route path="/circles" element={<Circles />} />
+          <Route path="/circle/:id" element={<CircleDetail />} />
+          <Route path="/curate-trip" element={<CurateTrip />} />
+          <Route path="/create-circle" element={<CreateCircle />} />
+          <Route path="/login" element={<Login />} />
+          <Route path='/signup' element={<Signup />} />
+          <Route path="/payment/success" element={<PaymentSuccess />} />
+        </Routes>
+      </BrowserRouter>
+    </SearchProvider>
   );
 }
 

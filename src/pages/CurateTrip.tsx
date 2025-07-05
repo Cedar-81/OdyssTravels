@@ -4,7 +4,7 @@ import Form2 from "@/components/new_trip_forms.tsx/form_2";
 import Form3 from "@/components/new_trip_forms.tsx/form_3";
 import Form4 from "@/components/new_trip_forms.tsx/form_4";
 import Form5 from "@/components/new_trip_forms.tsx/form_5";
-import { tripsService } from "@/services/trips";
+import ReadyTripPayment from "@/components/ready_trip_payment";
 import { usersService, type CompanyRoute } from "@/services/users";
 import { useNavigate } from "react-router-dom";
 
@@ -38,6 +38,9 @@ function validateTripForm(formData: TripFormData) {
   if (!formData.destinationCity) return "Destination city is required.";
   if (!formData.tripDate) return "Trip date is required.";
   if (!formData.tripTime) return "Trip time is required.";
+  if (!formData.tripPrice || isNaN(Number(formData.tripPrice)) || Number(formData.tripPrice) <= 0) return "Trip price is required and must be greater than 0.";
+  if (!formData.refundPolicyAcknowledged) return "You must acknowledge the refund policy.";
+  if (!formData.smartFillPolicy) return "Smart fill policy selection is required.";
   return null;
 }
 
@@ -60,6 +63,8 @@ export default function CurateTrip() {
   const [error, setError] = useState<string | null>(null);
   const [success, setSuccess] = useState(false);
   const [routes, setRoutes] = useState<CompanyRoute[]>([]);
+  const [showPayment, setShowPayment] = useState(false);
+  const [tripData, setTripData] = useState<any>(null);
 
   // Fetch routes on component mount
   useEffect(() => {
@@ -93,7 +98,8 @@ export default function CurateTrip() {
     }));
   };
 
-  const handleSubmit = async () => {
+  const handleSubmit = () => {
+    if (loading) return; // Prevent multiple submissions
     setError(null);
     setSuccess(false);
     const validationError = validateTripForm(formData);
@@ -101,45 +107,44 @@ export default function CurateTrip() {
       setError(validationError);
       return;
     }
+    
     setLoading(true);
-    try {
-      console.log("form data: ",  formData)
-      await tripsService.createTrip({
-        departureLoc: formData.departureCity,
-        arrivalLoc: formData.destinationCity,
-        departureDate: formData.tripDate?.toISOString().split('T')[0] || '',
-        arrivalDate: formData.tripDate?.toISOString().split('T')[0] || '',
-        seats: Number(formData.seatCount),
-        price: 0, // You may want to add a price field to the form
-        vehicle: formData.vehicleType,
-        memberIds: [], // You may want to add members selection
-        company: formData.transportPartner,
-        departureTOD: formData.tripTime,
-        creator: '', // You may want to set the creator from user context
-        fill: false,
-        vibes: formData.selectedVibes,
-        route_id: ""
-      });
-      setSuccess(true);
-      setCurrentStep(1);
-      setFormData({
-        vehicleType: '',
-        seatCount: '',
-        transportPartner: '',
-        departureCity: '',
-        destinationCity: '',
-        tripDate: null,
-        tripTime: '',
-        selectedVibes: [],
-        tripPrice: '',
-        refundPolicyAcknowledged: false,
-        smartFillPolicy: ''
-      });
-    } catch (err: any) {
-      setError(err?.response?.data?.message || err?.message || "Failed to create trip.");
-    } finally {
-      setLoading(false);
-    }
+    
+    // Get user from localStorage for creator field
+    const userStr = localStorage.getItem('odyss_user');
+    const user = userStr ? JSON.parse(userStr) : null;
+    const creator = user?.id || '';
+    
+    // Get route_id from selected route
+    const selectedRoute = routes.find(route => 
+      route.origin === formData.departureCity && 
+      route.destination === formData.destinationCity
+    );
+    
+    // Prepare trip data for payment
+    const preparedTripData = {
+      departureLoc: formData.departureCity,
+      arrivalLoc: formData.destinationCity,
+      departureDate: formData.tripDate?.toISOString().split('T')[0] || '',
+      arrivalDate: formData.tripDate?.toISOString().split('T')[0] || '',
+      seats: Number(formData.seatCount),
+      price: Number(formData.tripPrice) || 0,
+      vehicle: formData.vehicleType,
+      memberIds: [],
+      company: formData.transportPartner,
+      departureTOD: formData.tripTime,
+      creator: creator,
+      fill: formData.smartFillPolicy === 'smart_fill',
+      vibes: formData.selectedVibes,
+      route_id: selectedRoute?.id || ""
+    };
+    
+    // Store trip data in localStorage for PaymentSuccess to access
+    localStorage.setItem('pending_trip_data', JSON.stringify(preparedTripData));
+    
+    setTripData(preparedTripData);
+    setShowPayment(true);
+    setLoading(false);
   };
 
   const renderStep = () => {
@@ -197,7 +202,7 @@ export default function CurateTrip() {
     <main className="fixed top-0 right-0 h-screen w-screen bg-white z-50">
       {/* Fixed Top Progress Bar and Home Button */}
       <div className="fixed top-0 left-0 right-0 z-50 bg-white shadow-sm">
-        <div className="flex justify-center pt-4 pb-1">
+        <div className="flex justify-center py-2">
           <div className="group flex items-center cursor-pointer" onClick={() => navigate("/")}>
             <svg
               className="h-6 w-6 text-black transition-transform duration-200"
@@ -234,12 +239,30 @@ export default function CurateTrip() {
 
       {/* Form Container with Animation */}
       <div className="h-full flex justify-center">
-        <div 
-          key={currentStep}
-          className="animate-fadeIn"
-        >
-          {renderStep()}
-        </div>
+        {showPayment ? (
+          <div className="animate-fadeIn">
+            <div className="fixed z-50 w-screen h-screen items-center justify-center left-0 bg-black/50">
+              <button 
+                className="absolute top-4 right-4 text-2xl cursor-pointer font-bold text-black bg-white rounded-full px-2 z-10" 
+                onClick={() => setShowPayment(false)}
+              >
+                &times;
+              </button>
+              <ReadyTripPayment 
+                key="trip-payment"
+                tripData={tripData} 
+                email={"divinewisdom.dev@gmail.com"} 
+              />
+            </div>
+          </div>
+        ) : (
+          <div 
+            key={currentStep}
+            className="animate-fadeIn"
+          >
+            {renderStep()}
+          </div>
+        )}
       </div>
 
       <div className='h-20 lg:hidden'></div>

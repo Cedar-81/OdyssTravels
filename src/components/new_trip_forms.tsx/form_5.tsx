@@ -45,6 +45,7 @@ export default function Form5({ onSubmit, onPrevious, formData, onFormDataChange
     }, [formData.departureCity, formData.destinationCity, formData.tripTime, routes]);
 
     const handleSubmit = () => {
+        if (loading) return; // Prevent multiple submissions
         // Update parent form data
         onFormDataChange('tripPrice', localData.tripPrice);
         onFormDataChange('refundPolicyAcknowledged', localData.refundPolicyAcknowledged);
@@ -123,7 +124,7 @@ export default function Form5({ onSubmit, onPrevious, formData, onFormDataChange
                 className="w-full cursor-pointer py-3 text-center rounded-full text-white bg-black hover:bg-gray-800 transition-colors"
                 disabled={loading || !localData.refundPolicyAcknowledged}
             >
-                {loading ? "Creating..." : "Create Trip"}
+                {loading ? "Processing..." : "Book your seat"}
             </button>
         </section>
     )
