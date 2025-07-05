@@ -204,10 +204,10 @@ export default function RideDetail({ tripId, onClose }: RideDetailProps) {
                 </div>
             </div>
 
-            <div className="h-[13rem] absolute w-full justify-center bottom-0">
-                <div className="flex px-4 items-center justify-between text-sm mt-8"><h3 className="font-medium">{trip.company}</h3> <p><span className="font-medium capitalize">Vehicle: </span> {trip.vehicle}</p></div>
+            <div className="h-[13rem] absolute w-full justify-center bottom-2 space-y-8 border-t pt-5">
+                <div className="flex px-4 items-center justify-between text-sm"><h3 className="font-medium">{trip.company}</h3> <p><span className="font-medium capitalize">Vehicle: </span> {trip.vehicle}</p></div>
             
-                <div className="flex px-4 justify-between mt-8">
+                <div className="flex px-4 justify-between">
                     <div className="flex flex-col items-center">
                         <h4 className="font-medium">N{trip.price}</h4>
                         <p className="text-sm">per seat</p>

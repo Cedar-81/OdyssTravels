@@ -1,3 +1,4 @@
+import { useNavigate } from "react-router-dom";
 import { Avatar, AvatarFallback, AvatarImage } from "@radix-ui/react-avatar";
 import type { Trip } from "@/services/trips";
 
@@ -7,6 +8,8 @@ interface RideCardProps {
 }
 
 export default function RideCard({ trip, onJoin }: RideCardProps) {
+    const navigate = useNavigate();
+
     // Helper to format date to '08 May, 2025' and time to 'hh:mm am/pm' from a timestamp
     function formatDateTime(dateStr: string) {
         if (!dateStr) return { date: '', time: '' };
@@ -21,6 +24,26 @@ export default function RideCard({ trip, onJoin }: RideCardProps) {
             time: date.toLocaleTimeString('en-US', { hour: '2-digit', minute: '2-digit', hour12: true })
         };
     }
+
+    // Check if user is logged in
+    const isUserLoggedIn = () => {
+        if (typeof window === 'undefined') return false;
+        const userStr = localStorage.getItem('odyss_user');
+        return userStr !== null;
+    };
+
+    // Handle join button click
+    const handleJoinClick = () => {
+        if (!isUserLoggedIn()) {
+            // Redirect to login page if user is not logged in
+            navigate('/login');
+            return;
+        }
+        
+        // If user is logged in, proceed with normal join functionality
+        onJoin(trip);
+    };
+
     const departure = formatDateTime(trip.departureDate);
     const arrival = formatDateTime(trip.arrival_time);
 
@@ -68,8 +91,8 @@ export default function RideCard({ trip, onJoin }: RideCardProps) {
                 </div>
                 
                 <button 
-                  className="text-sm cursor-pointer rounded-full bg-black text-white px-5 py-1 h-10 min-w-max"
-                  onClick={() => onJoin(trip)}
+                  className="text-sm cursor-pointer rounded-full bg-black text-white px-5 py-1 h-10 min-w-max hover:bg-gray-800 transition-colors duration-200"
+                  onClick={handleJoinClick}
                 >{isMember ? 'View' : 'Join'}</button>
             </div>
 

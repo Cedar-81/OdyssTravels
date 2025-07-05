@@ -45,8 +45,8 @@ export default function Login() {
     };
 
     return(
-        <main className="fixed top-0 right-0 h-screen w-screen bg-white z-50">
-            <section className="space-y-8 w-[30rem] flex flex-col items-center mx-auto mt-[10rem]">
+        <main className="fixed top-0 right-0 h-screen px-8 w-full lg:w-screen bg-white z-50">
+            <section className="space-y-8 w-full lg:w-[30rem] flex flex-col items-center mx-auto mt-[10rem]">
                 <div className="flex gap-2 w-full items-center">
                     <button 
                         className="p-1 hover:bg-gray-100 rounded-full transition-colors"
