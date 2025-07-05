@@ -229,7 +229,7 @@ export default function RideDetail({ tripId, onClose }: RideDetailProps) {
                     className={`border-0 cursor-pointer text-center w-[90%] rounded-full py-3 transition-colors duration-200 ${isUserMember() ? 'bg-gray-300 text-gray-500 cursor-not-allowed' : 'bg-black text-white hover:bg-gray-800'}`}
                     onClick={() => setShowPayment(true)}
                     disabled={isUserMember()}
-                  >
+                  > 
                     Book trip
                   </button>
                 </div>
