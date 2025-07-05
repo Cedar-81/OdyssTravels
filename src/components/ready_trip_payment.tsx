@@ -34,7 +34,7 @@ export default function ReadyTripPayment({ tripData, email }: ReadyTripPaymentPr
                 arrivalLoc: tripData.arrivalLoc,
                 departureDate: tripData.departureDate,
                 arrivalDate: tripData.arrivalDate,
-                seats: tripData.seats,
+                seats: tripData.seats,     
                 price: tripData.price,
                 vehicle: tripData.vehicle,
                 company: tripData.company,
