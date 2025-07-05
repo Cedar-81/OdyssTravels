@@ -103,7 +103,7 @@ export default function RideDetail({ tripId, onClose }: RideDetailProps) {
   }
 
   return(
-        <section className="shadow-2xl space-y-6 fixed w-[22rem] top-0 right-0 h-screen z-50 bg-white">
+        <section className="shadow-2xl space-y-6 fixed w-[22rem] top-0 right-0 h-screen z-50 bg-white flex flex-col">
             <div className="px-3 py-6 h-[10rem] border space-y-4 rounded-b-xl shadow-xl">
                 <div className="flex gap-2 items-center">
                     <svg className="h-5 cursor-pointer" width="24" height="24" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg" onClick={onClose}>
@@ -130,8 +130,8 @@ export default function RideDetail({ tripId, onClose }: RideDetailProps) {
                 </div>
             </div>
             
-            <div className="space-y-4 h-[calc(100%-24rem)] pb-6 overflow-y-auto">
-                <div className="px-4 space-y-4">
+            <div className="space-y-4 flex-1 overflow-y-auto px-4">
+                <div className="space-y-4">
                     <h2 className="font-medium">Travel buddies</h2>
                     <div className="flex flex-col px-2 gap-3">
                         {trip.users.length === 0 && <div className="text-xs text-gray-400">No travel buddies yet.</div>}
@@ -163,7 +163,7 @@ export default function RideDetail({ tripId, onClose }: RideDetailProps) {
                     </div>
                 </div>
 
-                <div className="px-4 space-y-4">
+                <div className="space-y-4">
                     <h2 className="font-medium">Smart fill policy</h2>
 
                     <div className="flex flex-col px-2 gap-5">
@@ -182,7 +182,7 @@ export default function RideDetail({ tripId, onClose }: RideDetailProps) {
                     </div>
                 </div>
 
-                <div className="px-4 space-y-4 mt-8">
+                <div className="space-y-4 mt-8">
                     <h2 className="font-medium">Refund Eligibility</h2>
 
                     <div className="flex flex-col px-2 gap-5">
@@ -204,10 +204,10 @@ export default function RideDetail({ tripId, onClose }: RideDetailProps) {
                 </div>
             </div>
 
-            <div className="h-[13rem] absolute w-full justify-center bottom-2 space-y-8 border-t pt-5">
-                <div className="flex px-4 items-center justify-between text-sm"><h3 className="font-medium">{trip.company}</h3> <p><span className="font-medium capitalize">Vehicle: </span> {trip.vehicle}</p></div>
+            <div className="border-t pt-5 pb-4 px-4 space-y-4">
+                <div className="flex items-center justify-between text-sm"><h3 className="font-medium">{trip.company}</h3> <p><span className="font-medium capitalize">Vehicle: </span> {trip.vehicle}</p></div>
             
-                <div className="flex px-4 justify-between">
+                <div className="flex justify-between">
                     <div className="flex flex-col items-center">
                         <h4 className="font-medium">N{trip.price}</h4>
                         <p className="text-sm">per seat</p>
@@ -224,9 +224,9 @@ export default function RideDetail({ tripId, onClose }: RideDetailProps) {
                     </div>
                 </div>   
 
-                <div className="flex justify-center mt-5">
+                <div className="flex justify-center">
                   <button
-                    className={`border-0 cursor-pointer text-center w-[90%] rounded-full py-3 transition-colors duration-200 ${isUserMember() ? 'bg-gray-300 text-gray-500 cursor-not-allowed' : 'bg-black text-white hover:bg-gray-800'}`}
+                    className={`border-0 cursor-pointer text-center w-full rounded-full py-3 transition-colors duration-200 ${isUserMember() ? 'bg-gray-300 text-gray-500 cursor-not-allowed' : 'bg-black text-white hover:bg-gray-800'}`}
                     onClick={() => setShowPayment(true)}
                     disabled={isUserMember()}
                   > 
