@@ -1,6 +1,5 @@
 import { useState, useEffect, useRef } from 'react';
 import { Select, SelectContent, SelectGroup, SelectItem, SelectLabel, SelectTrigger, SelectValue } from "../ui/select";
-import { type CompanyRoute } from "@/services/users";
 import { showToast, toastMessages } from "@/utils/toast";
 
 interface Form5Props {
@@ -17,10 +16,9 @@ interface Form5Props {
   };
   onFormDataChange: (field: string, value: any) => void;
   loading?: boolean;
-  routes?: CompanyRoute[];
 }
 
-export default function Form5({ onSubmit, onPrevious, formData, onFormDataChange, loading, routes = [] }: Form5Props) {
+export default function Form5({ onSubmit, onPrevious, formData, onFormDataChange, loading }: Form5Props) {
     const [localData, setLocalData] = useState({
         tripPrice: formData.tripPrice,
         refundPolicyAcknowledged: formData.refundPolicyAcknowledged,

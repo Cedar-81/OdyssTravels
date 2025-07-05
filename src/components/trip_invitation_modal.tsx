@@ -1,6 +1,5 @@
 import { useState, useEffect } from "react";
 import { tripsService, type Trip } from "@/services/trips";
-import { Avatar, AvatarFallback, AvatarImage } from "./ui/avatar";
 
 interface TripInvitationModalProps {
   isOpen: boolean;

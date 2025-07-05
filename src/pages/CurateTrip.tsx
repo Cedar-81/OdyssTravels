@@ -1,11 +1,10 @@
-import { useState, useEffect } from 'react';
+import { useState } from 'react';
 import Form1 from "@/components/new_trip_forms.tsx/form_1";
 import Form2 from "@/components/new_trip_forms.tsx/form_2";
 import Form3 from "@/components/new_trip_forms.tsx/form_3";
 import Form4 from "@/components/new_trip_forms.tsx/form_4";
 import Form5 from "@/components/new_trip_forms.tsx/form_5";
 import ReadyTripPayment from "@/components/ready_trip_payment";
-import { usersService, type CompanyRoute } from "@/services/users";
 import { useNavigate } from "react-router-dom";
 
 // Define the trip data interface
@@ -66,17 +65,8 @@ export default function CurateTrip() {
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [success, setSuccess] = useState(false);
-  const [routes, setRoutes] = useState<CompanyRoute[]>([]);
   const [showPayment, setShowPayment] = useState(false);
   const [tripData, setTripData] = useState<any>(null);
-
-  // Fetch routes on component mount
-  useEffect(() => {
-    usersService.getAllCompanyRoutes().then(data => {
-      console.log('Fetched company routes:', data);
-      setRoutes(data);
-    }).catch(() => setRoutes([]));
-  }, []);
 
   const totalSteps = 5;
   const navigate = useNavigate();
@@ -188,7 +178,6 @@ export default function CurateTrip() {
             formData={formData}
             onFormDataChange={handleFormDataChange}
             loading={loading}
-            routes={routes}
           />
         );
       default:
