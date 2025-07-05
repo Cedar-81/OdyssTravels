@@ -1,6 +1,6 @@
 import Search from "./search";
 import { Avatar, AvatarFallback, AvatarImage } from "./ui/avatar";
-import { Menubar, MenubarContent, MenubarItem, MenubarMenu, MenubarSeparator, MenubarTrigger } from "./ui/menubar";
+import { Menubar, MenubarContent, MenubarItem, MenubarMenu, MenubarSeparator, MenubarSub, MenubarSubContent, MenubarSubTrigger, MenubarTrigger } from "./ui/menubar";
 import { useNavigate } from "react-router-dom";
 import { authService } from "@/services/auth";
 import { useState } from "react";
@@ -66,6 +66,33 @@ export default function Navbar() {
                             <MenubarSeparator />
                             <MenubarItem className="text-xs font-semibold !uppercase" disabled>User</MenubarItem>
                             <MenubarItem onClick={() => setShowProfile(true)}>Profile</MenubarItem>
+                            <MenubarSeparator />
+                              <MenubarItem className="text-xs font-semibold !uppercase" disabled>Support</MenubarItem>
+                              <MenubarSub>
+                                <MenubarSubTrigger>Contact Us</MenubarSubTrigger>
+                                <MenubarSubContent>
+                                  <MenubarItem>
+                                    <a
+                                      href="mailto:odyss.travels@gmail.com?subject=ALERT:%20SUPPORT%20NEEDED"
+                                      target="_blank"
+                                      rel="noopener noreferrer"
+                                      className="w-full h-full block"
+                                    >
+                                      Email
+                                    </a>
+                                  </MenubarItem>
+                                  <MenubarItem>
+                                    <a
+                                      href="https://chat.whatsapp.com/IvFuqtdm37tE79cIvWqHXZ"
+                                      target="_blank"
+                                      rel="noopener noreferrer"
+                                      className="w-full h-full block"
+                                    >
+                                      Community
+                                    </a>
+                                  </MenubarItem>
+                                </MenubarSubContent>
+                              </MenubarSub>
                             <MenubarSeparator />
                             <MenubarItem className="text-xs font-semibold !uppercase" disabled>Auth</MenubarItem>
                             <MenubarItem onClick={handleLogout}>Logout</MenubarItem>
