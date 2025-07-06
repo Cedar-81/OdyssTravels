@@ -132,7 +132,8 @@ export default function CircleDetail({ circle, onClose }: CircleDetailProps)  {
     const isLoggedIn = () => {
         if (typeof window === 'undefined') return false;
         const userStr = localStorage.getItem('odyss_user');
-        return !!userStr;
+        const accessToken = localStorage.getItem('access_token');
+        return !!(userStr && accessToken);
     };
 
     return(

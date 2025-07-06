@@ -26,9 +26,12 @@ export default function Circles() {
     
     // Check if there's a circle_id in the URL
     const circleId = searchParams.get('circle_id');
+    console.log("🔍 Circles page loaded with circle_id:", circleId);
+    console.log("🔍 Current user logged in:", isLoggedIn());
     
     if (circleId) {
       // Fetch specific circle
+      console.log("📋 Fetching specific circle with ID:", circleId);
       circlesService.getCircleDetails(circleId)
         .then((circle: Circle) => {
           console.log("📋 Fetched specific circle:", circle);
@@ -41,6 +44,7 @@ export default function Circles() {
         })
         .catch((err: any) => {
           console.error("❌ Error fetching specific circle:", err);
+          console.error("❌ Error details:", err.response?.data || err.message);
           setError(getCircleError(err));
           // Reset SEO on error
           resetSEO();
@@ -96,7 +100,8 @@ export default function Circles() {
   const isLoggedIn = () => {
     if (typeof window === 'undefined') return false;
     const userStr = localStorage.getItem('odyss_user');
-    return !!userStr;
+    const accessToken = localStorage.getItem('access_token');
+    return !!(userStr && accessToken);
   };
 
   const handleCreateCircle = () => {

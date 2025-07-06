@@ -1,4 +1,13 @@
 import { apiService } from './api';
+import axios from 'axios';
+
+// Public API service for unauthenticated requests
+const publicApiService = axios.create({
+  baseURL: import.meta.env.VITE_API_BASE_URL || 'https://server.odyss.ng',
+  headers: {
+    'Content-Type': 'application/json',
+  },
+});
 
 export interface CircleUser {
   id: string;
@@ -58,7 +67,18 @@ class CirclesService {
   }
 
   async getCircleDetails(circleId: string): Promise<Circle> {
-    return apiService.get<Circle>(`/users/circles/${circleId}`);
+    try {
+      // First try with authenticated request
+      return await apiService.get<Circle>(`/users/circles/${circleId}`);
+    } catch (error: any) {
+      // If 401 (unauthorized), try with public request
+      if (error.response?.status === 401) {
+        console.log("🔓 Trying public access for circle:", circleId);
+        const response = await publicApiService.get<Circle>(`/users/circles/${circleId}`);
+        return response.data;
+      }
+      throw error;
+    }
   }
 
   async createCircle(data: CreateCircleData): Promise<Circle> {

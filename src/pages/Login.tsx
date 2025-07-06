@@ -42,9 +42,13 @@ export default function Login() {
             
             // Check if there's a circle_id parameter to redirect back to
             const circleId = searchParams.get('circle_id');
+            console.log('Login successful, redirecting with circle_id:', circleId);
             if (circleId) {
-                navigate(`/circles?circle_id=${circleId}`);
+                const redirectUrl = `/circles?circle_id=${circleId}`;
+                console.log('Redirecting to:', redirectUrl);
+                navigate(redirectUrl);
             } else {
+                console.log('Redirecting to home');
                 navigate("/");
             }
         } catch (err: any) {
