@@ -69,13 +69,21 @@ class CirclesService {
   async getCircleDetails(circleId: string): Promise<Circle> {
     try {
       // First try with authenticated request
+      console.log("🔐 Trying authenticated request for circle:", circleId);
       return await apiService.get<Circle>(`/users/circles/${circleId}`);
     } catch (error: any) {
+      console.log("❌ Authenticated request failed:", error.response?.status, error.response?.data);
       // If 401 (unauthorized), try with public request
       if (error.response?.status === 401) {
         console.log("🔓 Trying public access for circle:", circleId);
-        const response = await publicApiService.get<Circle>(`/users/circles/${circleId}`);
-        return response.data;
+        try {
+          const response = await publicApiService.get<Circle>(`/users/circles/${circleId}`);
+          console.log("✅ Public access successful");
+          return response.data;
+        } catch (publicError: any) {
+          console.log("❌ Public access also failed:", publicError.response?.status, publicError.response?.data);
+          throw publicError;
+        }
       }
       throw error;
     }
