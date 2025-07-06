@@ -1,7 +1,7 @@
 import { useState, useEffect } from 'react';
 import { DatePicker } from "../ui/date_picker";
 import { Select, SelectContent, SelectGroup, SelectItem, SelectLabel, SelectTrigger, SelectValue } from "../ui/select";
-import { usersService, type CompanyRoute, type Company } from "@/services/users";
+import { usersService, type CompanyRoute, type Company, type CompanyVehicle } from "@/services/users";
 import { showToast, toastMessages } from "@/utils/toast";
 
 interface Form3Props {
@@ -13,6 +13,7 @@ interface Form3Props {
     tripDate: Date | null;
     tripTime: string;
     transportPartner: string;
+    vehicleType: string;
     selectedRouteId: string;
     selectedRoutePrice: number;
   };
@@ -28,46 +29,59 @@ export default function Form3({ onNext, onPrevious, formData, onFormDataChange }
     });
     const [allRoutes, setAllRoutes] = useState<CompanyRoute[]>([]);
     const [allCompanies, setAllCompanies] = useState<Company[]>([]);
+    const [allVehicles, setAllVehicles] = useState<CompanyVehicle[]>([]);
     const [filteredRoutes, setFilteredRoutes] = useState<CompanyRoute[]>([]);
     const [hasShownNoRoutesToast, setHasShownNoRoutesToast] = useState(false);
 
     useEffect(() => {
-      // Fetch both routes and companies
+      // Fetch routes, companies, and vehicles
       Promise.all([
         usersService.getAllCompanyRoutes(),
-        usersService.getAllCompanies()
-      ]).then(([routesData, companiesData]) => {
-        console.log('Fetched company routes:', routesData);
-        console.log('Fetched companies:', companiesData);
+        usersService.getAllCompanies(),
+        usersService.getAllCompanyVehicles()
+      ]).then(([routesData, companiesData, vehiclesData]) => {
         setAllRoutes(routesData);
         setAllCompanies(companiesData);
+        setAllVehicles(vehiclesData);
       }).catch(() => {
         setAllRoutes([]);
         setAllCompanies([]);
+        setAllVehicles([]);
       });
     }, []);
 
-    // Filter routes based on selected transport partner
+    // Filter routes based on selected transport partner and vehicle type
     useEffect(() => {
-      console.log('Form3 - transportPartner:', formData.transportPartner);
-      console.log('Form3 - allRoutes:', allRoutes);
-      console.log('Form3 - allCompanies:', allCompanies);
-      
       if (formData.transportPartner && allCompanies.length > 0) {
         // Find the selected company by name
         const selectedCompany = allCompanies.find(company => 
           company.company_name === formData.transportPartner
         );
         
-        console.log('Form3 - selectedCompany:', selectedCompany);
-        
         if (selectedCompany) {
-          // Filter routes by company_id
-          const companyRoutes = allRoutes.filter(route => 
+          // First filter routes by company_id
+          let companyRoutes = allRoutes.filter(route => 
             route.company_id === selectedCompany.id
           );
           
-          console.log('Form3 - filtered companyRoutes by company_id:', companyRoutes);
+          // If vehicle type is selected, also filter by vehicle_id
+          if (formData.vehicleType && allVehicles.length > 0) {
+            // Find the selected vehicle
+            const selectedVehicle = allVehicles.find(vehicle => 
+              vehicle.type === formData.vehicleType && 
+              vehicle.company_id === selectedCompany.id
+            );
+            
+            if (selectedVehicle) {
+              // Filter routes that have the selected vehicle in their vehicles array
+              companyRoutes = companyRoutes.filter(route => 
+                route.vehicles && route.vehicles.includes(selectedVehicle.id)
+              );
+            } else {
+              companyRoutes = [];
+            }
+          }
+          
           setFilteredRoutes(companyRoutes);
           
           if (companyRoutes.length === 0 && !hasShownNoRoutesToast) {
@@ -77,7 +91,6 @@ export default function Form3({ onNext, onPrevious, formData, onFormDataChange }
             setHasShownNoRoutesToast(false);
           }
         } else {
-          console.log('Form3 - Company not found:', formData.transportPartner);
           setFilteredRoutes([]);
         }
       } else {
@@ -90,13 +103,15 @@ export default function Form3({ onNext, onPrevious, formData, onFormDataChange }
           onFormDataChange('tripTime', '');
         }
       }
-    }, [formData.transportPartner, allRoutes, allCompanies]);
+    }, [formData.transportPartner, formData.vehicleType, allRoutes, allCompanies, allVehicles]);
 
-    // Handle clearing form data when transport partner changes
+    // Handle clearing form data when transport partner or vehicle type changes
     useEffect(() => {
       if (formData.transportPartner && filteredRoutes.length > 0) {
-        // Clear form data if current selections are not available for the selected company
-        if (localData.departureCity && !filteredRoutes.find(r => r.origin === localData.departureCity)) {
+        // Clear form data if current selections are not available for the selected company/vehicle
+        const isDepartureCityAvailable = filteredRoutes.find(r => r.origin === localData.departureCity);
+        
+        if (localData.departureCity && !isDepartureCityAvailable) {
           setLocalData(prev => ({ ...prev, departureCity: '', destinationCity: '', tripTime: '' }));
           onFormDataChange('departureCity', '');
           onFormDataChange('destinationCity', '');
@@ -104,7 +119,7 @@ export default function Form3({ onNext, onPrevious, formData, onFormDataChange }
           showToast.info(toastMessages.departureCityCleared);
         }
       }
-    }, [filteredRoutes, localData.departureCity]);
+    }, [filteredRoutes, localData.departureCity, formData.vehicleType]);
 
     // Get unique origins for departure city options
     const origins = Array.from(new Set(filteredRoutes.map(r => r.origin)));
@@ -117,12 +132,7 @@ export default function Form3({ onNext, onPrevious, formData, onFormDataChange }
         .map(r => r.dep_time)
     )).filter(Boolean).sort();
 
-    // Log filtered options for debugging
-    console.log('Form3 - Origins:', origins);
-    console.log('Form3 - Destinations:', destinations);
-    console.log('Form3 - Times:', times);
-    console.log('Form3 - Selected departureCity:', localData.departureCity);
-    console.log('Form3 - Selected destinationCity:', localData.destinationCity);
+
 
     const isValid = localData.departureCity && localData.destinationCity && localData.tripDate && localData.tripTime;
 

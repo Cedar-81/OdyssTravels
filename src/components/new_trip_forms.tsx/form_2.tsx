@@ -28,29 +28,33 @@ export default function Form2({ onNext, onPrevious, formData, onFormDataChange }
 
     useEffect(() => {
       usersService.getAllCompanies().then(setCompanies).catch(() => setCompanies([]));
-      usersService.getAllCompanyVehicles().then(vehicles => {
-        console.log('Fetched vehicles:', vehicles);
-        setAllVehicles(vehicles);
-      }).catch(() => setAllVehicles([]));
+      usersService.getAllCompanyVehicles().then(setAllVehicles).catch(() => setAllVehicles([]));
     }, []);
 
     // Filter vehicles based on selected company
     useEffect(() => {
       if (localData.transportPartner) {
         const selectedCompany = companies.find(c => c.company_name === localData.transportPartner);
+        
         if (selectedCompany) {
           const companyVehicles = allVehicles.filter(v => v.company_id === selectedCompany.id);
           setFilteredVehicles(companyVehicles);
+          
           if (companyVehicles.length === 0) {
             showToast.warning(toastMessages.noVehiclesAvailable);
           }
+          
           // Clear vehicle type if it's not available for the selected company
-          if (localData.vehicleType && !companyVehicles.find(v => v.type === localData.vehicleType)) {
+          const isVehicleAvailable = companyVehicles.find(v => v.type === localData.vehicleType);
+          
+          if (localData.vehicleType && !isVehicleAvailable) {
             setLocalData(prev => ({ ...prev, vehicleType: '', seatCount: '' }));
             onFormDataChange('vehicleType', '');
             onFormDataChange('seatCount', '');
             showToast.info(toastMessages.vehicleCleared);
           }
+        } else {
+          setFilteredVehicles([]);
         }
       } else {
         setFilteredVehicles([]);
@@ -66,6 +70,7 @@ export default function Form2({ onNext, onPrevious, formData, onFormDataChange }
     useEffect(() => {
       if (localData.vehicleType) {
         const selectedVehicle = filteredVehicles.find(v => v.type === localData.vehicleType);
+        
         if (selectedVehicle) {
           setLocalData(prev => ({ ...prev, seatCount: selectedVehicle.capacity.toString() }));
           onFormDataChange('seatCount', selectedVehicle.capacity.toString());
