@@ -11,7 +11,7 @@ import Login from './pages/Login';
 import Signup from './pages/Signup';
 import ForgotPassword from './pages/ForgotPassword';
 import ResetPassword from './pages/ResetPassword';
-import VerifyOTP from './pages/VerifyOTP';
+
 import PaymentSuccess from './pages/PaymentSuccess';
 import { SearchProvider } from './contexts/SearchContext';
 import { Toaster } from './components/ui/sonner';
@@ -32,7 +32,7 @@ function App() {
           <Route path="/login" element={<Login />} />
           <Route path='/signup' element={<Signup />} />
           <Route path="/forgot-password" element={<ForgotPassword />} />
-          <Route path="/verify-otp" element={<VerifyOTP />} />
+
           <Route path="/reset-password" element={<ResetPassword />} />
           <Route path="/payment/success" element={<PaymentSuccess />} />
         </Routes>

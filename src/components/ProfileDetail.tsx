@@ -85,8 +85,11 @@ export default function ProfileDetail({ onClose }: ProfileDetailProps) {
           const userId = user?.id;
           
           if (userId) {
+            // Handle both old format (array) and new format ({ trips: Trip[] })
+            const trips = Array.isArray(data) ? data : data.trips;
+            
             // Filter trips where user is a member or creator
-            const userTrips = data.filter(trip => 
+            const userTrips = trips.filter(trip => 
               trip.memberIds.includes(userId) || trip.creator === userId
             );
             

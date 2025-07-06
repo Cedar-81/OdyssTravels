@@ -100,7 +100,7 @@ export default function ResetPassword() {
 
                 <div className="text-center space-y-2">
                     <p className="text-sm text-gray-600">
-                        Enter your new password below.
+                        Enter the reset code sent to your email and your new password below.
                     </p>
                 </div>
 
@@ -118,7 +118,18 @@ export default function ResetPassword() {
                         />
                     </div>
 
-
+                    <div className="flex flex-col space-y-2 border border-black rounded-xl px-4 pt-3 pb-2 w-full">
+                        <label className="text-xs font-semibold" htmlFor="reset-otp">Reset Code</label>
+                        <Input 
+                            id="reset-otp"
+                            className="outline-none border-none text-sm focus:border-none" 
+                            type="text" 
+                            placeholder="Enter the 6-digit code"
+                            value={otp}
+                            onChange={e => setOtp(e.target.value)}
+                            required
+                        />
+                    </div>
 
                     <div className="flex flex-col space-y-2 border border-black rounded-xl px-4 pt-3 pb-2 w-full">
                         <label className="text-xs font-semibold" htmlFor="reset-password">New Password</label>
@@ -168,7 +179,16 @@ export default function ResetPassword() {
                     </button>
                 </form>
                 
-                <div className="text-center">
+                <div className="text-center space-y-2">
+                    <p className="text-sm text-gray-600">
+                        Didn't receive the code?{" "}
+                        <button 
+                            onClick={() => navigate("/forgot-password")}
+                            className="text-black font-medium hover:underline"
+                        >
+                            Request New Code
+                        </button>
+                    </p>
                     <p className="text-sm text-gray-600">
                         Remember your password?{" "}
                         <button 

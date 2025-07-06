@@ -32,9 +32,9 @@ export default function ForgotPassword() {
         try {
             await authService.forgotPassword(email);
             setSuccess(true);
-            // Redirect to OTP verification page after 1 second
+            // Redirect to reset password page after 1 second
             setTimeout(() => {
-                navigate(`/verify-otp?email=${email}`);
+                navigate(`/reset-password?email=${email}`);
             }, 1000);
         } catch (err: any) {
             setError(getAuthError(err));
@@ -69,7 +69,7 @@ export default function ForgotPassword() {
 
                 <div className="text-center space-y-2">
                     <p className="text-sm text-gray-600">
-                        Enter your email address and we'll send you a reset code to reset your password.
+                        Enter your email address and we'll send you a reset code. You'll then enter the code and your new password on the next page.
                     </p>
                 </div>
 

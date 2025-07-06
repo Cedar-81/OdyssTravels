@@ -40,7 +40,9 @@ function Search() {
         console.log('🔍 Searching rides with params:', searchParams);
         const results = await tripsService.searchTrips(searchParams);
         console.log('✅ Rides search results:', results);
-        setSearchResults(results);
+        // Handle both old format (array) and new format ({ trips: Trip[] })
+        const trips = Array.isArray(results) ? results : results.trips;
+        setSearchResults(trips);
       } else if (isCirclesPage) {
         const searchParams = {
           departure: origin,

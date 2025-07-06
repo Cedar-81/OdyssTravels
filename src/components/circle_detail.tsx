@@ -2,6 +2,7 @@ import { useState, useEffect } from "react";
 import { Avatar, AvatarFallback, AvatarImage } from "./ui/avatar";
 import type { Circle } from "@/services/circles";
 import { circlesService } from "@/services/circles";
+import { tripsService, type Trip } from "@/services/trips";
 import TripInvitationModal from "./trip_invitation_modal";
 import { updateSEO, formatCircleSEO } from "@/utils/seo";
 
@@ -14,6 +15,9 @@ export default function CircleDetail({ circle, onClose }: CircleDetailProps)  {
     const [copySuccess, setCopySuccess] = useState(false);
     const [inviteModalOpen, setInviteModalOpen] = useState(false);
     const [selectedMember, setSelectedMember] = useState<{ name: string; id: string; email: string } | null>(null);
+    const [memberTripsModalOpen, setMemberTripsModalOpen] = useState(false);
+    const [memberTrips, setMemberTrips] = useState<Trip[]>([]);
+    const [loadingTrips, setLoadingTrips] = useState(false);
 
     // Prevent scroll on body when sidebar is open
     useEffect(() => {
@@ -102,6 +106,48 @@ export default function CircleDetail({ circle, onClose }: CircleDetailProps)  {
         setSelectedMember(null);
     };
 
+    // Handle viewing member trips
+    const handleViewMemberTrips = async () => {
+        setLoadingTrips(true);
+        setMemberTripsModalOpen(true);
+        
+        try {
+            // Get all trips
+            const allTrips = await tripsService.listTrips();
+            
+            // Get circle member IDs
+            const memberIds = circle.users?.map(user => user.id) || 
+                            circle.members?.map(member => member.user_id) || [];
+            
+            // Filter trips that:
+            // 1. Are created by circle members
+            // 2. Fall within the circle's date range
+            // const circleStartDate = new Date(circle.startDate);
+            // const circleEndDate = new Date(circle.endDate);
+            
+            const relevantTrips = allTrips.trips.filter(trip => {
+                // const tripDate = new Date(trip.departureDate);
+                const isByMember = memberIds.includes(trip.creator);
+                // const isInDateRange = tripDate >= circleStartDate && tripDate <= circleEndDate;
+                
+                return isByMember;
+            });
+            
+            console.log("🚗 Member trips found:", relevantTrips);
+            setMemberTrips(relevantTrips);
+        } catch (err) {
+            console.error("❌ Error fetching member trips:", err);
+        } finally {
+            setLoadingTrips(false);
+        }
+    };
+
+    // Handle closing member trips modal
+    const handleCloseMemberTripsModal = () => {
+        setMemberTripsModalOpen(false);
+        setMemberTrips([]);
+    };
+
     // Handle joining circle
     const handleJoinCircle = async () => {
         if (!isLoggedIn()) {
@@ -177,7 +223,15 @@ export default function CircleDetail({ circle, onClose }: CircleDetailProps)  {
                 <div className="space-y-6">
                     <p className="text-sm text-black/60">{circle.description}</p>
                     <div className="space-y-4">
-                        <h2 className="font-medium">Members</h2>
+                        <div className="flex items-center justify-between">
+                            <h2 className="font-medium">Members</h2>
+                            <button 
+                                className="text-xs border border-black rounded-full cursor-pointer px-3 py-1 hover:bg-black hover:text-white transition-colors"
+                                onClick={handleViewMemberTrips}
+                            >
+                                view trips by members
+                            </button>
+                        </div>
                         <div className="flex flex-col px-2 gap-3">
                             {circle.users && circle.users.length > 0 ? (
                                 circle.users.map((user) => {
@@ -248,6 +302,22 @@ export default function CircleDetail({ circle, onClose }: CircleDetailProps)  {
                             </div>
                         )}
                     </div>
+
+                    {/* Member Trips Section */}
+                    {/* <div className="space-y-4">
+                        <div className="flex items-center justify-between">
+                            <h2 className="font-medium">Member Trips</h2>
+                            <button 
+                                className="text-xs border border-black rounded-full cursor-pointer px-3 py-1 hover:bg-black hover:text-white transition-colors"
+                                onClick={handleViewMemberTrips}
+                            >
+                                View Trips
+                            </button>
+                        </div>
+                        <p className="text-xs text-gray-500">
+                            See trips created by circle members within the circle's date range
+                        </p>
+                    </div> */}
                 </div>
             </div>
 
@@ -278,6 +348,75 @@ export default function CircleDetail({ circle, onClose }: CircleDetailProps)  {
                     circleId={circle.id}
                     circleName={circle.name}
                 />
+            )}
+
+            {/* Member Trips Modal */}
+            {memberTripsModalOpen && (
+                <div className="fixed inset-0 bg-black/40 shadow-xl bg-opacity-50 z-50 flex items-center justify-center">
+                    <div className="bg-white rounded-xl p-6 w-[90%] max-w-md max-h-[80vh] overflow-y-auto">
+                        <div className="flex items-center justify-between mb-4">
+                            <h3 className="text-lg font-semibold">Member Trips</h3>
+                            <button 
+                                onClick={handleCloseMemberTripsModal}
+                                className="text-gray-500 hover:text-gray-700"
+                            >
+                                <svg className="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
+                                </svg>
+                            </button>
+                        </div>
+                        
+                        {loadingTrips ? (
+                            <div className="text-center py-8">
+                                <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-black mx-auto"></div>
+                                <p className="text-sm text-gray-500 mt-2">Loading trips...</p>
+                            </div>
+                        ) : memberTrips.length === 0 ? (
+                            <div className="text-center py-8">
+                                <p className="text-sm text-gray-500">Circle members have not created any trips yet.</p>
+                            </div>
+                        ) : (
+                            <div className="space-y-4">
+                                {memberTrips.map((trip) => {
+                                    const tripDate = new Date(trip.departureDate);
+                                    const formattedDate = tripDate.toLocaleDateString('en-US', {
+                                        weekday: 'short',
+                                        month: 'short',
+                                        day: 'numeric',
+                                        year: 'numeric'
+                                    });
+                                    
+                                    return (
+                                        <div key={trip.id} className="border border-gray-200 rounded-lg p-4 space-y-3">
+                                            <div className="flex items-center justify-between">
+                                                <h4 className="font-medium text-sm">{trip.departureLoc} → {trip.arrivalLoc}</h4>
+                                                <span className="text-xs text-gray-500">{formattedDate}</span>
+                                            </div>
+                                            
+                                            <div className="flex items-center justify-between text-xs text-gray-600">
+                                                <span>Vehicle: {trip.vehicle}</span>
+                                                <span>Available seats: {trip.seats_available}/{trip.seats}</span>
+                                            </div>
+                                            
+                                            <div className="flex items-center justify-between">
+                                                <span className="text-sm font-medium">₦{trip.price.toLocaleString()}</span>
+                                                <button 
+                                                    onClick={() => {
+                                                        // Navigate to trip detail or open trip booking
+                                                        window.open(`/rides?trip_id=${trip.id}`, '_blank');
+                                                    }}
+                                                    className="text-xs bg-black text-white px-3 py-1 rounded-full hover:bg-gray-800 transition-colors"
+                                                >
+                                                    View Trip
+                                                </button>
+                                            </div>
+                                        </div>
+                                    );
+                                })}
+                            </div>
+                        )}
+                    </div>
+                </div>
             )}
         </section>
     );

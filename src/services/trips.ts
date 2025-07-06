@@ -76,8 +76,8 @@ export interface BookTripData {
 
 class TripsService {
   // Trip management
-  async listTrips(): Promise<Trip[]> {
-    return apiService.get<Trip[]>('/trips/');
+  async listTrips(): Promise<{ trips: Trip[] }> {
+    return apiService.get<{ trips: Trip[] }>('/trips/');
   }
 
   async getTrip(tripId: string): Promise<Trip> {
@@ -96,8 +96,8 @@ class TripsService {
     return apiService.delete(`/trips/${tripId}`);
   }
 
-  async searchTrips(params: TripSearchParams): Promise<Trip[]> {
-    return apiService.get<Trip[]>('/trips/search', params);
+  async searchTrips(params: TripSearchParams): Promise<{ trips: Trip[] }> {
+    return apiService.get<{ trips: Trip[] }>('/trips/search', params);
   }
 
   // Booking related
@@ -129,8 +129,8 @@ class TripsService {
   }
 
   // Company trips (for company users)
-  async listCompanyTrips(): Promise<Trip[]> {
-    return apiService.get<Trip[]>('/company/trips');
+  async listCompanyTrips(): Promise<{ trips: Trip[] }> {
+    return apiService.get<{ trips: Trip[] }>('/company/trips');
   }
 
   async createCompanyTrip(data: CreateTripData): Promise<Trip> {
