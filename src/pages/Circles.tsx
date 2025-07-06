@@ -28,8 +28,13 @@ export default function Circles() {
     const circleId = searchParams.get('circle_id');
     console.log("🔍 Circles page loaded with circle_id:", circleId);
     console.log("🔍 Current user logged in:", isLoggedIn());
+    console.log("🔍 Full URL:", window.location.href);
     
     if (circleId) {
+      // Store circle_id in localStorage for redirect purposes
+      localStorage.setItem('redirect_circle', circleId);
+      console.log("💾 Stored redirect_circle in localStorage:", circleId);
+      
       // Fetch specific circle
       console.log("📋 Fetching specific circle with ID:", circleId);
       circlesService.getCircleDetails(circleId)
@@ -41,6 +46,10 @@ export default function Circles() {
           // Update SEO for shared circle
           const seoData = formatCircleSEO(circle);
           updateSEO(seoData);
+          
+          // Clear the redirect_circle from localStorage since we successfully loaded it
+          localStorage.removeItem('redirect_circle');
+          console.log("🧹 Cleared redirect_circle from localStorage");
         })
         .catch((err: any) => {
           console.error("❌ Error fetching specific circle:", err);
@@ -51,28 +60,59 @@ export default function Circles() {
         })
         .finally(() => setLoading(false));
     } else {
-      // Fetch all circles
-      circlesService.getAllCircles()
-        .then((data: any) => {
-          let circles: Circle[] = [];
-          if (Array.isArray(data)) {
-            circles = data;
-          } else if (isCirclesResponse(data)) {
-            circles = data.circles;
-          }
-          console.log("📋 Fetched all circles:", circles);
-          setCircles(circles);
-          
-          // Reset SEO to default when viewing all circles
-          resetSEO();
-        })
-        .catch((err) => {
-          console.error("❌ Error fetching circles:", err);
-          setError(getCircleError(err));
-          // Reset SEO on error
-          resetSEO();
-        })
-        .finally(() => setLoading(false));
+      // Check if there's a stored redirect_circle in localStorage
+      const storedCircleId = localStorage.getItem('redirect_circle');
+      console.log("🔍 No circle_id in URL, checking localStorage redirect_circle:", storedCircleId);
+      
+      if (storedCircleId) {
+        // Fetch the stored circle
+        console.log("📋 Fetching stored circle with ID:", storedCircleId);
+        circlesService.getCircleDetails(storedCircleId)
+          .then((circle: Circle) => {
+            console.log("📋 Fetched stored circle:", circle);
+            setCircles([circle]);
+            setSelectedCircle(circle);
+            
+            // Update SEO for shared circle
+            const seoData = formatCircleSEO(circle);
+            updateSEO(seoData);
+            
+            // Clear the redirect_circle from localStorage since we successfully loaded it
+            localStorage.removeItem('redirect_circle');
+            console.log("🧹 Cleared redirect_circle from localStorage");
+          })
+          .catch((err: any) => {
+            console.error("❌ Error fetching stored circle:", err);
+            console.error("❌ Error details:", err.response?.data || err.message);
+            setError(getCircleError(err));
+            // Reset SEO on error
+            resetSEO();
+          })
+          .finally(() => setLoading(false));
+      } else {
+        // Fetch all circles
+        circlesService.getAllCircles()
+          .then((data: any) => {
+            let circles: Circle[] = [];
+            if (Array.isArray(data)) {
+              circles = data;
+            } else if (isCirclesResponse(data)) {
+              circles = data.circles;
+            }
+            console.log("📋 Fetched all circles:", circles);
+            setCircles(circles);
+            
+            // Reset SEO to default when viewing all circles
+            resetSEO();
+          })
+          .catch((err) => {
+            console.error("❌ Error fetching circles:", err);
+            setError(getCircleError(err));
+            // Reset SEO on error
+            resetSEO();
+          })
+          .finally(() => setLoading(false));
+      }
     }
   }, [searchParams]);
 
@@ -101,7 +141,9 @@ export default function Circles() {
     if (typeof window === 'undefined') return false;
     const userStr = localStorage.getItem('odyss_user');
     const accessToken = localStorage.getItem('access_token');
-    return !!(userStr && accessToken);
+    console.log("🔍 Circles page auth check - user:", !!userStr, "token:", !!accessToken);
+    // Allow access if user exists, even if token is missing (token might be expired)
+    return !!userStr;
   };
 
   const handleCreateCircle = () => {

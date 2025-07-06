@@ -1,5 +1,5 @@
 import { useState } from "react";
-import { useNavigate, useSearchParams } from "react-router-dom";
+import { useNavigate } from "react-router-dom";
 import { Input } from "@/components/ui/input";
 import { authService } from "@/services/auth";
 import { getAuthError } from "../utils/errorHandling";
@@ -17,7 +17,6 @@ export default function Login() {
     const [success, setSuccess] = useState(false);
     const [validationError, setValidationError] = useState<string | null>(null);
     const navigate = useNavigate();
-    const [searchParams] = useSearchParams();
 
     const handleSubmit = async (e: React.FormEvent) => {
         e.preventDefault();
@@ -40,12 +39,13 @@ export default function Login() {
             authService.setTokens(res.tokens.access_token, res.tokens.refresh_token);
             setSuccess(true);
             
-            // Check if there's a circle_id parameter to redirect back to
-            const circleId = searchParams.get('circle_id');
-            console.log('Login successful, redirecting with circle_id:', circleId);
-            if (circleId) {
-                const redirectUrl = `/circles?circle_id=${circleId}`;
-                console.log('Redirecting to:', redirectUrl);
+            // Check if there's a stored redirect_circle in localStorage
+            const storedCircleId = localStorage.getItem('redirect_circle');
+            console.log('Login successful, checking stored redirect_circle:', storedCircleId);
+            
+            if (storedCircleId) {
+                const redirectUrl = `/circles?circle_id=${storedCircleId}`;
+                console.log('Redirecting to stored circle:', redirectUrl);
                 navigate(redirectUrl);
             } else {
                 console.log('Redirecting to home');

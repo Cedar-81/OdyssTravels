@@ -37,14 +37,17 @@ export default function CircleCard({ circle, onJoin }: CircleCardProps) {
         if (typeof window === 'undefined') return false;
         const userStr = localStorage.getItem('odyss_user');
         const accessToken = localStorage.getItem('access_token');
-        return !!(userStr && accessToken);
+        console.log("🔍 CircleCard auth check - user:", !!userStr, "token:", !!accessToken);
+        // Allow access if user exists, even if token is missing (token might be expired)
+        return !!userStr;
     };
 
     const handleJoin = async () => {
         if (!isLoggedIn()) {
-            // Redirect to login with circle_id parameter
-            const loginUrl = `/login?circle_id=${circle.id}`;
-            window.location.href = loginUrl;
+            // Store circle_id in localStorage and redirect to login
+            localStorage.setItem('redirect_circle', circle.id);
+            console.log("🔐 Stored circle_id and redirecting to login:", circle.id);
+            window.location.href = '/login';
             return;
         }
 
