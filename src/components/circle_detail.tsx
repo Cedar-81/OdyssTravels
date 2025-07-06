@@ -2,6 +2,7 @@ import { useState, useEffect } from "react";
 import { Avatar, AvatarFallback, AvatarImage } from "./ui/avatar";
 import type { Circle } from "@/services/circles";
 import TripInvitationModal from "./trip_invitation_modal";
+import { updateSEO, formatCircleSEO } from "@/utils/seo";
 
 interface CircleDetailProps {
   circle: Circle;
@@ -20,6 +21,14 @@ export default function CircleDetail({ circle, onClose }: CircleDetailProps)  {
             document.body.style.overflow = 'unset';
         };
     }, []);
+
+    // Update SEO when circle detail is opened
+    useEffect(() => {
+        if (circle) {
+            const seoData = formatCircleSEO(circle);
+            updateSEO(seoData);
+        }
+    }, [circle]);
 
     // Helper to get user initials
     const getUserInitials = (firstName: string, lastName: string) => {

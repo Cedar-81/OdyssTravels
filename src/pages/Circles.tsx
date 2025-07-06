@@ -5,6 +5,7 @@ import { circlesService, type Circle } from "@/services/circles";
 import { useNavigate, useSearchParams } from "react-router-dom";
 import { useSearch } from "@/contexts/SearchContext";
 import { getCircleError } from "../utils/errorHandling";
+import { updateSEO, resetSEO, formatCircleSEO } from "@/utils/seo";
 
 function isCirclesResponse(data: any): data is { circles: Circle[] } {
   return data && typeof data === 'object' && Array.isArray(data.circles);
@@ -33,10 +34,16 @@ export default function Circles() {
           console.log("📋 Fetched specific circle:", circle);
           setCircles([circle]);
           setSelectedCircle(circle);
+          
+          // Update SEO for shared circle
+          const seoData = formatCircleSEO(circle);
+          updateSEO(seoData);
         })
         .catch((err: any) => {
           console.error("❌ Error fetching specific circle:", err);
           setError(getCircleError(err));
+          // Reset SEO on error
+          resetSEO();
         })
         .finally(() => setLoading(false));
     } else {
@@ -51,10 +58,15 @@ export default function Circles() {
           }
           console.log("📋 Fetched all circles:", circles);
           setCircles(circles);
+          
+          // Reset SEO to default when viewing all circles
+          resetSEO();
         })
         .catch((err) => {
           console.error("❌ Error fetching circles:", err);
           setError(getCircleError(err));
+          // Reset SEO on error
+          resetSEO();
         })
         .finally(() => setLoading(false));
     }
@@ -72,6 +84,8 @@ export default function Circles() {
     return () => {
       console.log("🧹 Clearing search results on Circles page unmount");
       clearSearchResults();
+      // Reset SEO when component unmounts
+      resetSEO();
     };
   }, [clearSearchResults]);
 

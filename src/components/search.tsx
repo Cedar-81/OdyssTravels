@@ -66,7 +66,7 @@ function Search() {
   }, [origin, destination, date, time]);
 
   return (
-    <section className="hidden lg:flex w-[40rem] min-w-max bg-white border shadow-xl border-black/20 gap-4 py-3 px-4 mx-auto rounded-xl overflow-clip">
+    <section className="hidden lg:flex min-w-max bg-white border shadow-xl border-black/20 gap-4 py-3 px-4 mx-auto rounded-xl overflow-clip">
         <div className="flex flex-col space-y-2">
             <label className="text-xs px-3" htmlFor="origin">
               {isCirclesPage ? "Departure" : "Origin"}
