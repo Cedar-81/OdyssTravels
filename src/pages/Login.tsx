@@ -1,5 +1,5 @@
 import { useState } from "react";
-import { useNavigate } from "react-router-dom";
+import { useNavigate, useSearchParams } from "react-router-dom";
 import { Input } from "@/components/ui/input";
 import { authService } from "@/services/auth";
 import { getAuthError } from "../utils/errorHandling";
@@ -17,6 +17,7 @@ export default function Login() {
     const [success, setSuccess] = useState(false);
     const [validationError, setValidationError] = useState<string | null>(null);
     const navigate = useNavigate();
+    const [searchParams] = useSearchParams();
 
     const handleSubmit = async (e: React.FormEvent) => {
         e.preventDefault();
@@ -38,7 +39,14 @@ export default function Login() {
             console.log('Login response:', res);
             authService.setTokens(res.tokens.access_token, res.tokens.refresh_token);
             setSuccess(true);
-            navigate("/");
+            
+            // Check if there's a circle_id parameter to redirect back to
+            const circleId = searchParams.get('circle_id');
+            if (circleId) {
+                navigate(`/circles?circle_id=${circleId}`);
+            } else {
+                navigate("/");
+            }
         } catch (err: any) {
             setError(getAuthError(err));
         } finally {

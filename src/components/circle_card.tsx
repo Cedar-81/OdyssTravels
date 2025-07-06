@@ -33,7 +33,20 @@ export default function CircleCard({ circle, onJoin }: CircleCardProps) {
         }
     }, [circle]);
 
+    const isLoggedIn = () => {
+        if (typeof window === 'undefined') return false;
+        const userStr = localStorage.getItem('odyss_user');
+        return !!userStr;
+    };
+
     const handleJoin = async () => {
+        if (!isLoggedIn()) {
+            // Redirect to login with circle_id parameter
+            const loginUrl = `/login?circle_id=${circle.id}`;
+            window.location.href = loginUrl;
+            return;
+        }
+
         setLoading(true);
         setError(null);
         try {
@@ -87,13 +100,21 @@ export default function CircleCard({ circle, onJoin }: CircleCardProps) {
             <div className="flex flex-col gap-2 items-end ml-auto">
                 {error && <div className="text-xs text-red-500 mb-1">{error}</div>}
                 {!joined ? (
-                    <button 
-                        className="text-sm cursor-pointer rounded-full bg-black text-white h-max px-5 py-1 disabled:opacity-60" 
-                        onClick={handleJoin}
-                        disabled={loading}
-                    >
-                        {loading ? "Joining..." : "Join"}
-                    </button>
+                    <div className="flex flex-col gap-1">
+                        <button 
+                            className="text-sm cursor-pointer rounded-full bg-black text-white h-max px-5 py-1 disabled:opacity-60" 
+                            onClick={handleJoin}
+                            disabled={loading}
+                        >
+                            {loading ? "Joining..." : (isLoggedIn() ? "Join" : "Login to Join")}
+                        </button>
+                        <button 
+                            className="text-xs cursor-pointer min-w-max rounded-full border border-black text-black h-max px-3 py-1 hover:bg-black hover:text-white transition-colors" 
+                            onClick={() => onJoin(circle)}
+                        >
+                            View Details
+                        </button>
+                    </div>
                 ) : (
                     <button 
                         className="text-sm cursor-pointer rounded-full bg-black text-white h-max px-5 py-1" 

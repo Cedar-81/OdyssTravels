@@ -1,6 +1,7 @@
 import { useState, useEffect } from "react";
 import { Avatar, AvatarFallback, AvatarImage } from "./ui/avatar";
 import type { Circle } from "@/services/circles";
+import { circlesService } from "@/services/circles";
 import TripInvitationModal from "./trip_invitation_modal";
 import { updateSEO, formatCircleSEO } from "@/utils/seo";
 
@@ -101,6 +102,25 @@ export default function CircleDetail({ circle, onClose }: CircleDetailProps)  {
         setSelectedMember(null);
     };
 
+    // Handle joining circle
+    const handleJoinCircle = async () => {
+        if (!isLoggedIn()) {
+            // Redirect to login with circle_id parameter
+            const loginUrl = `/login?circle_id=${circle.id}`;
+            window.location.href = loginUrl;
+            return;
+        }
+
+        try {
+            await circlesService.joinCircle(circle.id);
+            // Refresh the page to show updated member status
+            window.location.reload();
+        } catch (err) {
+            console.error('Failed to join circle:', err);
+            // You could add a toast notification here
+        }
+    };
+
     // Prevent scroll propagation
     const handleScroll = (e: React.WheelEvent) => {
         e.stopPropagation();
@@ -109,6 +129,11 @@ export default function CircleDetail({ circle, onClose }: CircleDetailProps)  {
     const currentUserId = getCurrentUserId();
     const isCurrentUserMember = circle.users?.some(user => user.id === currentUserId) || 
                                circle.members?.some(member => member.user_id === currentUserId);
+    const isLoggedIn = () => {
+        if (typeof window === 'undefined') return false;
+        const userStr = localStorage.getItem('odyss_user');
+        return !!userStr;
+    };
 
     return(
         <section 
@@ -164,7 +189,7 @@ export default function CircleDetail({ circle, onClose }: CircleDetailProps)  {
                                                 </Avatar>
                                                 <p className="text-xs">{user.first_name} {user.last_name}</p>
                                             </div>
-                                            {user.id !== currentUserId && (
+                                            {user.id !== currentUserId && isCurrentUserMember && (
                                                 <div className="flex gap-2">
                                                     <button 
                                                         className="text-xs border border-black rounded-full cursor-pointer px-3 py-1 hover:bg-black hover:text-white transition-colors"
@@ -188,7 +213,7 @@ export default function CircleDetail({ circle, onClose }: CircleDetailProps)  {
                                                 </Avatar>
                                                 <p className="text-xs">{member.first_name} {member.last_name}</p>
                                             </div>
-                                            {member.user_id !== currentUserId && (
+                                            {member.user_id !== currentUserId && isCurrentUserMember && (
                                                 <div className="flex gap-2">
                                                     <button 
                                                         className="text-xs border border-black rounded-full cursor-pointer px-3 py-1 hover:bg-black hover:text-white transition-colors"
@@ -206,16 +231,18 @@ export default function CircleDetail({ circle, onClose }: CircleDetailProps)  {
                             )}
                         </div>
 
-                        <div className="w-full flex justify-end">
-                            <button 
-                                className={`text-xs border border-black rounded-full cursor-pointer px-5 py-1 transition-colors duration-200 ${
-                                    copySuccess ? 'bg-green-500 text-white border-green-500' : 'hover:bg-black hover:text-white'
-                                }`}
-                                onClick={handleInviteOthers}
-                            >
-                                {copySuccess ? 'Copied!' : 'invite others'}
-                            </button>
-                        </div>
+                        {isCurrentUserMember && (
+                            <div className="w-full flex justify-end">
+                                <button 
+                                    className={`text-xs border border-black rounded-full cursor-pointer px-5 py-1 transition-colors duration-200 ${
+                                        copySuccess ? 'bg-green-500 text-white border-green-500' : 'hover:bg-black hover:text-white'
+                                    }`}
+                                    onClick={handleInviteOthers}
+                                >
+                                    {copySuccess ? 'Copied!' : 'invite others'}
+                                </button>
+                            </div>
+                        )}
                     </div>
                 </div>
             </div>
@@ -229,8 +256,9 @@ export default function CircleDetail({ circle, onClose }: CircleDetailProps)  {
                                 : 'bg-black text-white hover:bg-gray-800'
                         }`}
                         disabled={isCurrentUserMember}
+                        onClick={handleJoinCircle}
                     >
-                        {isCurrentUserMember ? 'Already Joined' : 'Join'}
+                        {isCurrentUserMember ? 'Already Joined' : (isLoggedIn() ? 'Join' : 'Login to Join')}
                     </button>
                 </div>
             </div>
