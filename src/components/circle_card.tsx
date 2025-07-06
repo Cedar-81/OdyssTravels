@@ -51,10 +51,12 @@ export default function CircleCard({ circle, onJoin }: CircleCardProps) {
         if (!dateStr) return '';
         const date = new Date(dateStr);
         if (isNaN(date.getTime())) return dateStr;
+        // Include weekday as short (e.g., Thu, Fri)
         return date.toLocaleDateString('en-US', {
+            weekday: 'short',
             month: 'long',
             day: '2-digit',
-        }) + ', ' + date.toLocaleTimeString('en-US', { hour: '2-digit', minute: undefined, hour12: true }).replace(':00', '').replace(' ', '');
+        });
     }
 
     return(
@@ -76,7 +78,11 @@ export default function CircleCard({ circle, onJoin }: CircleCardProps) {
             <div className="space-y-1">
                 <p className="text-xs">{circle.departure} → {circle.destination}</p>
                 <h3 className="text-sm lg:text-base font-semibold">{circle.name}</h3>
-                <p className="text-xs">{formatDateTime(circle.startDate)} - {formatDateTime(circle.endDate)}</p>
+                <p className="text-xs">
+                    {formatDateTime(circle.startDate) === formatDateTime(circle.endDate)
+                        ? formatDateTime(circle.startDate)
+                        : `${formatDateTime(circle.startDate)} - ${formatDateTime(circle.endDate)}`}
+                </p>
             </div>
             <div className="flex flex-col gap-2 items-end ml-auto">
                 {error && <div className="text-xs text-red-500 mb-1">{error}</div>}
