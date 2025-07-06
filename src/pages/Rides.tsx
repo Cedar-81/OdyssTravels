@@ -80,6 +80,21 @@ export default function Rides() {
   // Display search results if available, otherwise show all trips
   const displayTrips = searchResults !== null ? searchResults : trips;
 
+  // Check if user is logged in
+  const isLoggedIn = () => {
+    if (typeof window === 'undefined') return false;
+    const userStr = localStorage.getItem('odyss_user');
+    return !!userStr;
+  };
+
+  const handleCreateTrip = () => {
+    if (isLoggedIn()) {
+      navigate("/curate-trip");
+    } else {
+      navigate("/login");
+    }
+  };
+
   console.log("📊 Displaying trips:", {
     totalTrips: trips.length,
     searchResults: searchResults?.length || 0,
@@ -99,7 +114,7 @@ export default function Rides() {
           </p>
         </div>
         <div>
-          <button onClick={() => navigate("/curate-trip")} className="!size-10 flex items-center justify-center cursor-pointer text-xs lg:text-base bg-black text-white rounded-full">
+          <button onClick={handleCreateTrip} className="!size-10 flex items-center justify-center cursor-pointer text-xs lg:text-base bg-black text-white rounded-full">
             <svg width="24" height="24" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
               <path d="M11.5 12.5H6V11.5H11.5V6H12.5V11.5H18V12.5H12.5V18H11.5V12.5Z" fill="white"/>
             </svg>

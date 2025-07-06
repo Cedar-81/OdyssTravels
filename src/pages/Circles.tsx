@@ -78,6 +78,21 @@ export default function Circles() {
   // Display search results if available, otherwise show all circles
   const displayCircles = searchResults !== null ? searchResults : circles;
 
+  // Check if user is logged in
+  const isLoggedIn = () => {
+    if (typeof window === 'undefined') return false;
+    const userStr = localStorage.getItem('odyss_user');
+    return !!userStr;
+  };
+
+  const handleCreateCircle = () => {
+    if (isLoggedIn()) {
+      navigate("/create-circle");
+    } else {
+      navigate("/login");
+    }
+  };
+
   console.log("📊 Displaying circles:", {
     totalCircles: circles.length,
     searchResults: searchResults?.length || 0,
@@ -97,7 +112,7 @@ export default function Circles() {
           </p>
         </div>
         <div>
-          <button onClick={() => navigate("/create-circle")} className="!size-10 flex items-center justify-center cursor-pointer text-xs lg:text-base bg-black text-white rounded-full">
+          <button onClick={handleCreateCircle} className="!size-10 flex items-center justify-center cursor-pointer text-xs lg:text-base bg-black text-white rounded-full">
             <svg width="24" height="24" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
               <path d="M11.5 12.5H6V11.5H11.5V6H12.5V11.5H18V12.5H12.5V18H11.5V12.5Z" fill="white"/>
             </svg>

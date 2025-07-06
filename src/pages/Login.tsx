@@ -105,6 +105,18 @@ export default function Login() {
                         {loading ? "Logging in..." : "Login"}
                     </button>
                 </form>
+                
+                <div className="text-center">
+                    <p className="text-sm text-gray-600">
+                        Don't have an account?{" "}
+                        <button 
+                            onClick={() => navigate("/signup")}
+                            className="text-black font-medium hover:underline"
+                        >
+                            Signup
+                        </button>
+                    </p>
+                </div>
             </section>
         </main>
     )
