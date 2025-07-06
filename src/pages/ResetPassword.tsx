@@ -1,5 +1,5 @@
-import { useState } from "react";
-import { useNavigate } from "react-router-dom";
+import { useState, useEffect } from "react";
+import { useNavigate, useSearchParams } from "react-router-dom";
 import { Input } from "@/components/ui/input";
 import { authService } from "@/services/auth";
 import { getAuthError } from "../utils/errorHandling";
@@ -8,49 +8,65 @@ function validateEmail(email: string) {
     return /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email);
 }
 
-export default function Login() {
+export default function ResetPassword() {
     const [email, setEmail] = useState("");
-    const [password, setPassword] = useState("");
+    const [otp, setOtp] = useState("");
+    const [newPassword, setNewPassword] = useState("");
     const [showPassword, setShowPassword] = useState(false);
     const [loading, setLoading] = useState(false);
     const [error, setError] = useState<string | null>(null);
     const [success, setSuccess] = useState(false);
     const [validationError, setValidationError] = useState<string | null>(null);
     const navigate = useNavigate();
+    const [searchParams] = useSearchParams();
+
+    // Get email and OTP from URL params if available
+    const emailFromParams = searchParams.get('email');
+    const otpFromParams = searchParams.get('otp');
+    
+    useEffect(() => {
+        if (emailFromParams) {
+            setEmail(emailFromParams);
+        }
+        if (otpFromParams) {
+            setOtp(otpFromParams);
+        }
+    }, [emailFromParams, otpFromParams]);
 
     const handleSubmit = async (e: React.FormEvent) => {
         e.preventDefault();
         setError(null);
         setSuccess(false);
         setValidationError(null);
+        
         // Client-side validation
         if (!validateEmail(email)) {
             setValidationError("Please enter a valid email address.");
             return;
         }
-        if (password.length < 6) {
+        if (!otp) {
+            setValidationError("Please enter the reset code.");
+            return;
+        }
+        if (newPassword.length < 6) {
             setValidationError("Password must be at least 6 characters.");
             return;
         }
+        
         setLoading(true);
         try {
-            const res = await authService.login({ email, password });
-            console.log('Login response:', res);
-            authService.setTokens(res.tokens.access_token, res.tokens.refresh_token);
+            const resetData = {
+                email,
+                new_password: newPassword,
+                otp: otp
+            };
+            console.log("🔐 Sending reset password data:", resetData);
+            await authService.resetPassword(resetData);
             setSuccess(true);
-            
-            // Check if there's a stored redirect_circle in localStorage
-            const storedCircleId = localStorage.getItem('redirect_circle');
-            console.log('Login successful, checking stored redirect_circle:', storedCircleId);
-            
-            if (storedCircleId) {
-                const redirectUrl = `/circles?circle_id=${storedCircleId}`;
-                console.log('Redirecting to stored circle:', redirectUrl);
-                navigate(redirectUrl);
-            } else {
-                console.log('Redirecting to home');
-                navigate("/");
-            }
+            // Redirect to login after 2 seconds
+            setTimeout(() => {
+                navigate("/login");
+            }, 2000);
         } catch (err: any) {
             setError(getAuthError(err));
         } finally {
@@ -64,7 +80,7 @@ export default function Login() {
                 <div className="flex gap-2 w-full items-center">
                     <button 
                         className="p-1 hover:bg-gray-100 rounded-full transition-colors"
-                        onClick={() => navigate("/")}
+                        onClick={() => navigate("/login")}
                     >
                         <svg
                             className="h-6 w-6 text-black transition-transform duration-200"
@@ -79,14 +95,20 @@ export default function Login() {
                             <path d="M9 21V9h6v12" />
                         </svg>
                     </button>
-                    <h1 className="text-xl font-semibold">Welcome back,</h1>
+                    <h1 className="text-xl font-semibold">Set New Password</h1>
+                </div>
+
+                <div className="text-center space-y-2">
+                    <p className="text-sm text-gray-600">
+                        Enter your new password below.
+                    </p>
                 </div>
 
                 <form className="space-y-4 w-full" onSubmit={handleSubmit} noValidate>
                     <div className="flex flex-col space-y-2 border border-black rounded-xl px-4 pt-3 pb-2 w-full">
-                        <label className="text-xs font-semibold" htmlFor="login-email">Email</label>
+                        <label className="text-xs font-semibold" htmlFor="reset-email">Email</label>
                         <Input 
-                            id="login-email"
+                            id="reset-email"
                             className="outline-none border-none text-sm focus:border-none" 
                             type="email" 
                             placeholder="e.g johnnydex@gmail.com"
@@ -95,16 +117,19 @@ export default function Login() {
                             required
                         />
                     </div>
+
+
+
                     <div className="flex flex-col space-y-2 border border-black rounded-xl px-4 pt-3 pb-2 w-full">
-                        <label className="text-xs font-semibold" htmlFor="login-password">Password</label>
+                        <label className="text-xs font-semibold" htmlFor="reset-password">New Password</label>
                         <div className="relative">
                             <Input 
-                                id="login-password"
+                                id="reset-password"
                                 className="outline-none border-none text-sm focus:border-none pr-10" 
                                 type={showPassword ? "text" : "password"}
-                                placeholder="*************"
-                                value={password}
-                                onChange={e => setPassword(e.target.value)}
+                                placeholder="Enter your new password"
+                                value={newPassword}
+                                onChange={e => setNewPassword(e.target.value)}
                                 required
                             />
                             <button
@@ -125,39 +150,36 @@ export default function Login() {
                             </button>
                         </div>
                     </div>
+                    
                     {validationError && <div className="text-red-500 text-sm text-center">{validationError}</div>}
                     {error && <div className="text-red-500 text-sm text-center">{error}</div>}
-                    {success && <div className="text-green-600 text-sm text-center">Login successful!</div>}
+                    {success && (
+                        <div className="text-green-600 text-sm text-center">
+                            Password reset successful! Redirecting to login...
+                        </div>
+                    )}
+                    
                     <button 
                         type="submit"
                         className="w-full cursor-pointer py-3 text-center rounded-full text-white bg-black hover:bg-gray-800 transition-colors"
                         disabled={loading}
                     >
-                        {loading ? "Logging in..." : "Login"}
+                        {loading ? "Resetting..." : "Reset Password"}
                     </button>
                 </form>
                 
                 <div className="text-center">
-                    <button 
-                        onClick={() => navigate("/forgot-password")}
-                        className="text-sm text-gray-600 hover:text-black transition-colors"
-                    >
-                        Forgot Password?
-                    </button>
-                </div>
-                
-                <div className="text-center">
                     <p className="text-sm text-gray-600">
-                        Don't have an account?{" "}
+                        Remember your password?{" "}
                         <button 
-                            onClick={() => navigate("/signup")}
+                            onClick={() => navigate("/login")}
                             className="text-black font-medium hover:underline"
                         >
-                            Signup
+                            Login
                         </button>
                     </p>
                 </div>
             </section>
         </main>
     )
-}
+} 

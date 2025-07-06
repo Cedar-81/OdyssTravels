@@ -32,7 +32,7 @@ export interface GoogleOAuthData {
 export interface PasswordResetData {
   email: string;
   new_password: string;
-  token?: string;
+  otp: string;
 }
 
 export interface ChangePasswordData {
