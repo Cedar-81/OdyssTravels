@@ -1,10 +1,25 @@
 import { useState } from "react";
 import { paymentsService } from "@/services/payments";
 import { getPaymentError } from "../utils/errorHandling";
+import { jwtDecode } from 'jwt-decode';
 
 interface ReadyPaymentProps {
   tripId: string;
   email: string;
+}
+
+function isAccessTokenValid() {
+  const token = localStorage.getItem('access_token');
+  if (!token) return false;
+  try {
+    const decoded = jwtDecode(token);
+    const exp = decoded && typeof decoded === 'object' ? decoded.exp : undefined;
+    if (!exp) return false;
+    const now = Math.floor(Date.now() / 1000);
+    return exp > now;
+  } catch {
+    return false;
+  }
 }
 
 export default function ReadyPayment({ tripId, email }: ReadyPaymentProps) {
@@ -12,6 +27,10 @@ export default function ReadyPayment({ tripId, email }: ReadyPaymentProps) {
     const [error, setError] = useState<string | null>(null);
 
     const handlePayment = async () => {
+        if (!isAccessTokenValid() || !localStorage.getItem('odyss_user')) {
+            window.location.href = '/login';
+            return;
+        }
         setLoading(true);
         setError(null);
         try {

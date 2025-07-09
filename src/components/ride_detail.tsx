@@ -4,6 +4,7 @@ import { tripsService, type Trip } from "@/services/trips";
 import { getTripError } from "../utils/errorHandling";
 import clsx from "clsx";
 import ReadyPayment from "./ready_payment";
+import { jwtDecode } from 'jwt-decode';
 
 interface RideDetailProps {
   tripId: string;
@@ -77,6 +78,20 @@ export default function RideDetail({ tripId, onClose }: RideDetailProps) {
     if (!trip) return false;
     const userId = getUserIdFromLocalStorage();
     return Array.isArray(trip.memberIds) && trip.memberIds.includes(userId);
+  }
+
+  function isAccessTokenValid() {
+    const token = localStorage.getItem('access_token');
+    if (!token) return false;
+    try {
+      const decoded = jwtDecode(token);
+      const exp = decoded && typeof decoded === 'object' ? decoded.exp : undefined;
+      if (!exp) return false;
+      const now = Math.floor(Date.now() / 1000);
+      return exp > now;
+    } catch {
+      return false;
+    }
   }
 
   // Handle copying the shareable link
@@ -247,7 +262,13 @@ export default function RideDetail({ tripId, onClose }: RideDetailProps) {
                 <div className="flex justify-center">
                   <button
                     className={`border-0 disabled:bg-gray-300 cursor-pointer text-center w-full rounded-full py-3 transition-colors duration-200 ${isUserMember() ? 'bg-gray-300 text-gray-500 cursor-not-allowed' : 'bg-black text-white hover:bg-gray-800'}`}
-                    onClick={() => setShowPayment(true)}
+                    onClick={() => {
+                      if (!isAccessTokenValid() || !localStorage.getItem('odyss_user')) {
+                        window.location.href = '/login';
+                        return;
+                      }
+                      setShowPayment(true);
+                    }}
                     disabled={isUserMember() || trip.id == "a4dc4dc9-9209-4ab2-bfc7-e62dd94a2746"}
                   > 
                     Book trip
