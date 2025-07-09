@@ -261,16 +261,17 @@ export default function RideDetail({ tripId, onClose }: RideDetailProps) {
 
                 <div className="flex justify-center">
                   <button
-                    className={`border-0 disabled:bg-gray-300 cursor-pointer text-center w-full rounded-full py-3 transition-colors duration-200 ${isUserMember() ? 'bg-gray-300 text-gray-500 cursor-not-allowed' : 'bg-black text-white hover:bg-gray-800'}`}
+                    className={`border-0 disabled:bg-gray-300 cursor-pointer text-center w-full rounded-full py-3 transition-colors duration-200 ${isUserMember() || trip.seats_available === 0 ? 'bg-gray-300 text-gray-500 cursor-not-allowed' : 'bg-black text-white hover:bg-gray-800'}`}
                     onClick={() => {
+                      if (trip.seats_available === 0) return;
                       if (!isAccessTokenValid() || !localStorage.getItem('odyss_user')) {
                         window.location.href = '/login';
                         return;
                       }
                       setShowPayment(true);
                     }}
-                    disabled={isUserMember() || trip.id == "096c5dfa-d17d-467c-b554-eb2a889af8f4"}
-                  > 
+                    disabled={isUserMember() || trip.seats_available === 0 || trip.id == "a4dc4dc9-9209-4ab2-bfc7-e62dd94a2746"}
+                  >
                     Book trip
                   </button>
                 </div>
@@ -280,7 +281,7 @@ export default function RideDetail({ tripId, onClose }: RideDetailProps) {
               <div className="fixed inset-0 z-[999] flex pt-[8rem] justify-center bg-black/40">
                 <div className="relative animate-in fade-in-0 zoom-in-95 duration-300 transition-all ease-out">
                   <button className="absolute top-2 right-2 text-2xl cursor-pointer font-bold text-black bg-white rounded-full px-2 z-10" onClick={() => setShowPayment(false)}>&times;</button>
-                  <ReadyPayment tripId={trip.id} email={getUserEmailFromLocalStorage()} />
+                  <ReadyPayment tripId={trip.id} email={getUserEmailFromLocalStorage()} seatsAvailable={trip.seats_available} />
                 </div>
               </div>
             )}

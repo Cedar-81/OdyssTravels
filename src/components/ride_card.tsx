@@ -34,6 +34,7 @@ export default function RideCard({ trip, onJoin }: RideCardProps) {
 
     // Handle join button click
     const handleJoinClick = () => {
+        if (trip.seats_available === 0) return;
         if (!isUserLoggedIn()) {
             // Redirect to login page if user is not logged in
             navigate('/login');
@@ -91,10 +92,12 @@ export default function RideCard({ trip, onJoin }: RideCardProps) {
                 </div>
                 
                 <button 
-                  disabled = {trip.id == "096c5dfa-d17d-467c-b554-eb2a889af8f4"}
+                  disabled={trip.id == "a4dc4dc9-9209-4ab2-bfc7-e62dd94a2746" || trip.seats_available === 0}
                   className="text-sm cursor-pointer disabled:bg-gray-500 rounded-full bg-black text-white px-5 py-1 h-10 min-w-max hover:bg-gray-800 transition-colors duration-200"
                   onClick={handleJoinClick}
-                >{isMember ? 'View' : 'Join'}</button>
+                >
+                  {isMember ? 'View' : 'Join'}
+                </button>
             </div>
 
             <div>

@@ -22,11 +22,12 @@ function isAccessTokenValid() {
   }
 }
 
-export default function ReadyPayment({ tripId, email }: ReadyPaymentProps) {
+export default function ReadyPayment({ tripId, email, seatsAvailable }: ReadyPaymentProps & { seatsAvailable: number }) {
     const [loading, setLoading] = useState(false);
     const [error, setError] = useState<string | null>(null);
 
     const handlePayment = async () => {
+        if (seatsAvailable === 0) return;
         if (!isAccessTokenValid() || !localStorage.getItem('odyss_user')) {
             window.location.href = '/login';
             return;
@@ -64,7 +65,7 @@ export default function ReadyPayment({ tripId, email }: ReadyPaymentProps) {
             <button 
                 className="w-full cursor-pointer py-3 text-center rounded-full text-white bg-black hover:bg-gray-800 transition-colors disabled:opacity-60" 
                 onClick={handlePayment}
-                disabled={loading}
+                disabled={loading || seatsAvailable === 0}
             >
                 {loading ? "Processing..." : "Make payment"}
             </button>
