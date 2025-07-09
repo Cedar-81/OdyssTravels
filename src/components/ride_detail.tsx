@@ -270,7 +270,7 @@ export default function RideDetail({ tripId, onClose }: RideDetailProps) {
                       }
                       setShowPayment(true);
                     }}
-                    disabled={isUserMember() || trip.seats_available === 0 || trip.id == "a4dc4dc9-9209-4ab2-bfc7-e62dd94a2746"}
+                    disabled={true}
                   >
                     Book trip
                   </button>
