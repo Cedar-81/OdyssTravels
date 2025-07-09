@@ -16,6 +16,7 @@ export default function Form1({ onNext }: Form1Props) {
             
             <button 
               onClick={onNext}
+              disabled={true}
               className="w-full cursor-pointer py-3 text-center rounded-full text-white bg-black hover:bg-gray-800 transition-colors"
             >
               Get curating
