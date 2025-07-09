@@ -1,4 +1,5 @@
 import axios, { type AxiosInstance, type AxiosResponse } from 'axios';
+import { jwtDecode } from 'jwt-decode';
 
 // Base API configuration
 const API_BASE_URL = import.meta.env.VITE_API_BASE_URL || 'https://server.odyss.ng';
@@ -16,10 +17,38 @@ class ApiService {
 
     // Request interceptor to add auth token
     this.api.interceptors.request.use(
-      (config) => {
-        const token = localStorage.getItem('access_token');
-        // Debug log
-        // console.log('Attaching access token:', token);
+      async (config) => {
+        let token = localStorage.getItem('access_token');
+        const refreshToken = localStorage.getItem('refresh_token');
+        // Proactive refresh: check if token is about to expire (within 5 minutes)
+        if (token && refreshToken) {
+          try {
+            const decoded = jwtDecode(token);
+            const exp = decoded && typeof decoded === 'object' ? decoded.exp : undefined;
+            if (exp) {
+              const now = Math.floor(Date.now() / 1000);
+              // If token expires in less than 5 minutes, refresh it
+              if (exp - now < 300) {
+                // Call refresh endpoint
+                const API_BASE_URL = import.meta.env.VITE_API_BASE_URL || 'https://server.odyss.ng';
+                const response = await axios.post(`${API_BASE_URL}/auth/token/refresh`, {
+                  refresh_token: refreshToken,
+                });
+                token = response.data.access_token;
+                if (typeof token === 'string') {
+                  localStorage.setItem('access_token', token);
+                }
+              }
+            }
+          } catch (e) {
+            // If decoding fails, clear tokens and redirect to login
+            localStorage.removeItem('access_token');
+            localStorage.removeItem('refresh_token');
+            localStorage.removeItem('odyss_user');
+            window.location.href = '/login';
+            return Promise.reject(e);
+          }
+        }
         if (config.headers) {
           if (typeof config.headers.set === 'function') {
             // AxiosHeaders instance
