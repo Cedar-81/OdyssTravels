@@ -92,7 +92,7 @@ export default function RideCard({ trip, onJoin }: RideCardProps) {
                 </div>
                 
                 <button 
-                  disabled={true}
+                  // disabled={true}
                   className="text-sm cursor-pointer disabled:bg-gray-500 rounded-full bg-black text-white px-5 py-1 h-10 min-w-max hover:bg-gray-800 transition-colors duration-200"
                   onClick={handleJoinClick}
                 >
