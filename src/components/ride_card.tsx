@@ -34,7 +34,7 @@ export default function RideCard({ trip, onJoin }: RideCardProps) {
 
     // Handle join button click
     const handleJoinClick = () => {
-        if (trip.seats_available === 0) return;
+        // if (trip.seats_available === 0) return;
         if (!isUserLoggedIn()) {
             // Redirect to login page if user is not logged in
             navigate('/login');
